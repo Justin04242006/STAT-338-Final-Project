@@ -20,13 +20,13 @@ the amount of PM2.5 emitted by those sources in 2025.
 #### STAT\_338\_Project\_Paper.md:
 
 The final deliverable of the project. A html file containing a formal,
-highly detailed academic write up of my project process, including data
-sources, acquisition, and preprocessing steps, the models used for
-prediction and inference purposes, the methodology of customizing
-feature selection and cross validation workflows, the selection of two
-final models (one for inference, and one for prediction), a
-consideration of each model’s strengths and limitations, and an Appendix
-containing the code in STAT\_338\_Project\_Codes.md to ensure
-reproducibility of my work. The repository STAT\_308\_Final\_Project
-does not contain such a write up because it was composed as a Google
-Doc.
+highly detailed academic write up of my project process, including a
+statement of the problem my project seeks to address; data sources,
+acquisition, and preprocessing steps; the models used for prediction and
+inference purposes, the methodology of customizing feature selection and
+cross validation workflows; the selection of two final models (one for
+inference, and one for prediction), a consideration of each model’s
+strengths and limitations, and an Appendix containing the code in
+STAT\_338\_Project\_Codes.md to ensure reproducibility of my work. The
+repository STAT\_308\_Final\_Project does not contain such a write up
+because it was composed as a Google Doc.
