@@ -106,9 +106,10 @@ distance calculations I need for this project.
     Chunk1<-Purpleair_historical_data_2025[1:1000000, ]
     Chunk1_averaged_by_hour<-Chunk1%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>% #Implementing peer reviewed correction formulas, which approximate ambient temperature and humidity as a function of the sensor's internal temperature and humidity (explain these in detail in the paper, and cite the paper where they originate from)
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE))%>%  #Averages atmospheric variables for each day/hour combination for each sensor index. 
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE))  #Averages atmospheric variables for each day/hour combination for each sensor index
 
 I repeated this exact pipeline for each subsequent chunk of 1 million
 observations in Purpleair\_historical\_data\_2025, yielding a total of
@@ -118,151 +119,154 @@ the row indices used in the first line of code.
     Chunk2<-Purpleair_historical_data_2025[1000001:2000000, ]
     Chunk2_averaged_by_hour<-Chunk2%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE))
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk3<-Purpleair_historical_data_2025[2000001:3000000, ]
     Chunk3_averaged_by_hour<-Chunk3%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>%
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) 
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk4<-Purpleair_historical_data_2025[3000001:4000000, ]
     Chunk4_averaged_by_hour<-Chunk4%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE))
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk5<-Purpleair_historical_data_2025[4000001:5000000, ]
     Chunk5_averaged_by_hour<-Chunk5%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE))
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk6<-Purpleair_historical_data_2025[5000001:6000000, ]
     Chunk6_averaged_by_hour<-Chunk6%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE))
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk7<-Purpleair_historical_data_2025[6000001:7000000, ]
     Chunk7_averaged_by_hour<-Chunk7%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) 
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk8<-Purpleair_historical_data_2025[7000001:8000000, ]
     Chunk8_averaged_by_hour<-Chunk8%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) 
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk9<-Purpleair_historical_data_2025[8000001:9000000, ]
     Chunk9_averaged_by_hour<-Chunk9%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) 
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk10<-Purpleair_historical_data_2025[9000001:10000000, ]
     Chunk10_averaged_by_hour<-Chunk10%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE))
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk11<-Purpleair_historical_data_2025[10000001:11000000, ]
     Chunk11_averaged_by_hour<-Chunk11%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) 
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk12<-Purpleair_historical_data_2025[11000001:12000000, ]
     Chunk12_averaged_by_hour<-Chunk12%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) 
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk13<-Purpleair_historical_data_2025[12000001:13000000, ]
     Chunk13_averaged_by_hour<-Chunk13%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) 
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk14<-Purpleair_historical_data_2025[13000001:14000000, ]
     Chunk14_averaged_by_hour<-Chunk14%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) 
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk15<-Purpleair_historical_data_2025[14000001:15000000, ]
     Chunk15_averaged_by_hour<-Chunk15%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE))
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk16<-Purpleair_historical_data_2025[15000001:16000000, ]
     Chunk16_averaged_by_hour<-Chunk16%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) 
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk17<-Purpleair_historical_data_2025[16000001:17000000, ]
     Chunk17_averaged_by_hour<-Chunk17%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) 
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk18<-Purpleair_historical_data_2025[17000001:18000000, ]
     Chunk18_averaged_by_hour<-Chunk18%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) 
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk19<-Purpleair_historical_data_2025[18000001:19000000, ]
     Chunk19_averaged_by_hour<-Chunk19%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE))
-
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk20<-Purpleair_historical_data_2025[19000001: nrow(Purpleair_historical_data_2025), ]
     Chunk20_averaged_by_hour<-Chunk20%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
-      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% 
+      mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
+      mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity, na.rm=TRUE), average_temperature=mean(temperature, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) 
+      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
 I then combined the chunks back into a full dataframe.
 
@@ -372,7 +376,7 @@ time):
 
     final_output_list <- list()
 
-    for (i in seq_along(Relevant_sensor_indices)) {
+    for (i in seq_along(vec)) {
       
       # Calculate the distance from this sensor to every pollution source
       distances_to_pollution_sources <- vapply(
@@ -407,6 +411,14 @@ time):
     }
     length(final_output_list)
     final_output_list[1]
+
+This will not render in this document because I have set eval=FALSE to
+most of the previous code so that the rendering of this document would
+not depend on me being connected to GlobalProtect or the database. So I
+did the next best thing: I included a screenshot of the output of the
+previous code chunk.
+
+<img src="Final_output_list[1].png" alt="" width="75%" style="display: block; margin: auto;" />
 
 As can be seen above, the output list consists of 116 elements, one for
 each sensor index in the original metadata. Each element in the list
@@ -477,9 +489,23 @@ in order to remove time dependency at the hourly scale.
     Purpleair_data_2025_modeling_dataset<-Purpleair_data_2025_hourly_averages%>%
     arrange(sensor_index, Day, Hour)%>%
     group_by(sensor_index)%>%
+      
     mutate(sensor_index=sensor_index, Day=Day, Hour=Hour, closest_source_distance=closest_source_distance, second_closest_source_distance=second_closest_source_distance, third_closest_source_distance=third_closest_source_distance, fourth_closest_source_distance=fourth_closest_source_distance, fifth_closest_source_distance=fifth_closest_source_distance, 
-              closest_source_2025_pm2p5=closest_source_2025_pm2p5, second_closest_source_2025_pm2p5=second_closest_source_2025_pm2p5, third_closest_source_2025_pm2p5=third_closest_source_2025_pm2p5, fourth_closest_source_2025_pm2p5=fourth_closest_source_2025_pm2p5, fifth_closest_source_2025_pm2p5=fifth_closest_source_2025_pm2p5, pm2p5_hourly_difference=average_pm2p5-lag(average_pm2p5), 
-              humidity_hourly_difference=average_humidity-lag(average_humidity), temperature_hourly_difference=average_temperature-lag(average_temperature), pressure_hourly_difference=average_pressure-lag(average_pressure))%>%
+              closest_source_2025_pm2p5=closest_source_2025_pm2p5, second_closest_source_2025_pm2p5=second_closest_source_2025_pm2p5, third_closest_source_2025_pm2p5=third_closest_source_2025_pm2p5, fourth_closest_source_2025_pm2p5=fourth_closest_source_2025_pm2p5, fifth_closest_source_2025_pm2p5=fifth_closest_source_2025_pm2p5)%>%
+      
+    mutate(
+        observation_time = as.POSIXct(
+          paste(Day, sprintf("%02d:00:00", Hour)),
+          format = "%Y-%m-%d %H:%M:%S",
+          tz = "UTC"
+        ),
+        
+        time_difference = as.numeric(
+          difftime(observation_time, lag(observation_time), units = "hours")
+        ),
+        
+        pm2p5_hourly_difference=ifelse(time_difference==1, average_pm2p5-lag(average_pm2p5), NA),
+        humidity_hourly_difference=ifelse(time_difference==1, average_humidity-lag(average_humidity), NA),     temperature_hourly_difference=ifelse(time_difference==1, average_temperature-lag(average_temperature), pressure_hourly_difference=ifelse(time_difference==1, average_pressure-lag(average_pressure))%>%
     select(-average_pm2p5, -average_humidity, -average_temperature, -average_pressure) #I don't need the raw hourly averages for the modeling
 
 This places NA values for the lagged predictors at positions where the
@@ -499,8 +525,63 @@ entirety of 2025. I investigate the date ranges for each sensor here.
 
 # 10/14/2026:
 
-Extracting the earliest and latest date in 2025 when each sensor index
-reported readings
+Investigating date ranges of historical data reporting for each sensor
+and visualizing the temporal coverage of 2025 historical records for the
+sensors
+
+    #Since I generated Purpleair_data_2025_modeling_dataset and Purpleair_sensor_information internally within R, I must write them out to csv files and then read those csv files back in, so that the remainder of my code can actually be evaluated during rendering. 
+
+    Purpleair_data_2025_modeling_dataset<-write.csv(Purpleair_data_2025_modeling_dataset, "Purple_air_data_2025_modeling_dataset.csv", row.names=FALSE)
+
+    Purpleair_sensor_information<-write.csv(Purpleair_sensor_information, "Purple_air_sensor_information.csv", row.names=FALSE)
+
+    library(tidyverse)
+
+    ## Warning: package 'ggplot2' was built under R version 4.4.3
+
+    ## Warning: package 'tibble' was built under R version 4.4.3
+
+    ## Warning: package 'tidyr' was built under R version 4.4.3
+
+    ## Warning: package 'readr' was built under R version 4.4.3
+
+    ## Warning: package 'purrr' was built under R version 4.4.3
+
+    ## Warning: package 'dplyr' was built under R version 4.4.3
+
+    ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+    ## ✔ dplyr     1.2.0     ✔ readr     2.1.6
+    ## ✔ forcats   1.0.1     ✔ stringr   1.6.0
+    ## ✔ ggplot2   4.0.2     ✔ tibble    3.3.1
+    ## ✔ lubridate 1.9.4     ✔ tidyr     1.3.2
+    ## ✔ purrr     1.2.1     
+    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ✖ dplyr::filter() masks stats::filter()
+    ## ✖ dplyr::lag()    masks stats::lag()
+    ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+
+    Purpleair_data_2025_modeling_dataset<-read_csv("~/Desktop/STAT_338/STAT_338/Final_project/STAT_338_Final_Project/Purple_air_data_2025_modeling_dataset.csv")
+
+    ## Rows: 672531 Columns: 17
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr  (2): Day, Hour
+    ## dbl (15): sensor_index, closest_source_distance, second_closest_source_dista...
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+    Purpleair_sensor_information<-read_csv("~/Desktop/STAT_338/STAT_338/Final_project/STAT_338_Final_Project/Purple_air_sensor_information.csv")
+
+    ## Rows: 193 Columns: 11
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr  (4): name, model, hardware, sensor_activity_status
+    ## dbl  (5): sensor_index, location_type, latitude, longitude, private
+    ## dttm (2): date_created, last_seen
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
     Date_range_per_sensor_index<-Purpleair_data_2025_modeling_dataset%>%
     group_by(sensor_index)%>%
@@ -509,19 +590,142 @@ reported readings
     Sensors_reporting_the_entire_year<-Date_range_per_sensor_index%>%
     filter(earliest_day=="01/01/25" & latest_day=="12/31/25")
 
-I see that only one sensor index, sensor 195173, was actively reporting
-data during the entire span of 2025. This is because the other sensors
-in the dataset were either installed later than January 1, 2025 or
-stopped reporting data earlier than December 31, 2025. We could further
-investigate this by seeing how many sensors started reporting data in
-each month of 2025. However, there’s an easier way to do it using the
-database schema: we can check the date\_created and last\_seen variables
+    nrow(Sensors_reporting_the_entire_year)
+
+    ## [1] 1
+
+I see that only one sensor index, sensor 195173, actively reported data
+during the entire span of 2025. This is because the other sensors in the
+dataset were either installed later than January 1, 2025 or stopped
+reporting data earlier than December 31, 2025. We can further
+investigate this by checking the date\_created and last\_seen variables
 in the Purpleair\_sensor\_information database table for each sensor
 index.
 
-    Purpleair_sensor_information<-dbGetQuery(con, "SELECT * FROM Purpleair_sensor_information")
-
     Purpleair_sensor_information_applicable<-Purpleair_sensor_information%>%
-    filter(sensor_index %in% Purpleair_sensor_information_relevant$sensor_index)
+    filter(sensor_index %in% Purpleair_data_2025_modeling_dataset$sensor_index)
+
+    Sensors_installed_in_2025_reporting_only_part_of_2025<-Purpleair_sensor_information_applicable%>%
+    filter(date_created > "2025-01-01 00:00:00" & last_seen < "2026-01-01 00:00:00")
+
+    nrow(Sensors_installed_in_2025_reporting_only_part_of_2025)
+
+    ## [1] 1
+
+    print(Sensors_installed_in_2025_reporting_only_part_of_2025)
+
+    ## # A tibble: 1 × 11
+    ##   sensor_index date_created        last_seen           name  location_type model
+    ##          <dbl> <dttm>              <dttm>              <chr>         <dbl> <chr>
+    ## 1       265767 2025-02-18 15:48:02 2025-10-31 10:48:43 Lyon…             1 PA-I…
+    ## # ℹ 5 more variables: hardware <chr>, latitude <dbl>, longitude <dbl>,
+    ## #   private <dbl>, sensor_activity_status <chr>
+
+Only one sensor in our dataset was installed during 2025 AND stopped
+reporting data in 2025. This sensor was installed on February 18, 2025
+and stopped reporting on October 31, 2025.
+
+Let’s see how many sensors were installed BEFORE 2025 AND stopped
+reporting data in 2025.
+
+    Sensors_installed_before_2025_reporting_only_part_of_2025<-Purpleair_sensor_information_applicable%>%
+    filter(date_created < "2025-01-01 00:00:00" & last_seen < "2026-01-01 00:00:00")
+
+    nrow(Sensors_installed_before_2025_reporting_only_part_of_2025)
+
+    ## [1] 53
+
+53 sensors in our dataset were installed before 2025 and stopped
+reporting data in 2025. This means that 116-54=62 sensors were installed
+before 2025 and either stopped reporting data after 2025or are still
+reporting data. However, even for sensors still reporting data, we
+cannot assume that data was reported continuously during 2025. There may
+be intervals of time during 2025 where no data exist for certain
+sensors.
+
+If a sensor continuously reported data during 2025, we would expect this
+sensor to have 24\*365=8,760 hourly averaged records in the modeling
+dataset. Therefore, we can determine the percentage of the expected
+records for each sensor and plot a distribution of the percentages.
+
+    Record_percentages<-c()
+    for (sensor in unique(Purpleair_data_2025_modeling_dataset$sensor_index)){
+      filtered_data<-Purpleair_data_2025_modeling_dataset%>%
+        filter(sensor_index==sensor)
+        Sensor_record_percentage=(nrow(filtered_data)/8760)*100
+        Record_percentages<-c(Record_percentages, Sensor_record_percentage)
+    }
+
+    hist(Record_percentages, breaks=20)
+
+![](STAT_338_Project_Codes_files/figure-markdown_strict/unnamed-chunk-23-1.png)
+
+    sum(Record_percentages >= 90)
+
+    ## [1] 49
+
+    sum(Record_percentages <= 5)
+
+    ## [1] 1
+
+    sum(Record_percentages <= 25)
+
+    ## [1] 21
+
+    sum(Record_percentages <= 50)
+
+    ## [1] 40
+
+    sum(Record_percentages <= 75)
+
+    ## [1] 51
+
+The highest proportion of sensors (49) had greater than 90% historical
+coverage in 2025, which is good. However, one sensor had no more than 5%
+historical coverage, 21 sensors had no more than 25% historical
+coverage, 40 sensors had no more than 50% historical coverage, and 51
+sensors had no more than 75% historical coverage.
+
+We can see the exact number of observations available for each sensor
+index (remember that the ideal number for 100% historical coverage is
+8760 observations)
+
+    table(Purpleair_data_2025_modeling_dataset$sensor_index)
+
+    ## 
+    ##   4395   4404   6546  36281  36901  39173  43955  45079  45359  51933  87741 
+    ##   8082   8064   8088   4366   6831   7991   6881   8087   4454   3628   8088 
+    ##  88413  95075  96035  96079  96933 101643 113959 120369 123003 124513 124649 
+    ##   7631   8085   7951   3693   2884   8087   8087   8037   6838   2755   8088 
+    ## 124677 124685 124715 124737 124759 133664 137618 137622 140390 144504 147893 
+    ##   8034   5081   7845   8083   8083   4915   8086   8086   2616   5475   6886 
+    ## 148029 148035 148545 149090 149530 150066 151042 151050 151082 153638 166645 
+    ##   3871   8074   8085   8074   8077   3600   4215   8047   7398   8075   6806 
+    ## 168725 169187 171015 171075 175417 175419 175455 175457 175483 179769 180725 
+    ##   3566      1   5081   8077   8085   8086   8067   8086   8086   1356   5589 
+    ## 182245 182281 184435 184939 185237 185239 186099 186621 186941 187547 187615 
+    ##   8082   7829   7730   6654   8088   7545   3526   8003   7960   7947   7830 
+    ## 188475 188749 189233 189329 189821 191181 192597 192837 193661 193669 193671 
+    ##   2909   8056   4399   2866   4848   8088   5871   8076   3897   8087   8068 
+    ## 193676 193689 193787 193801 195173 203303 211477 220177 220191 220209 220223 
+    ##   5249   8088   8088   8072   8590   8067   8060   1831   2026   2041   1820 
+    ## 220261 220521 220531 220537 220553 220577 220579 220583 220591 220613 221165 
+    ##   1925   2015   2160   2323   2140   2074   2011   2000   2115   2019   2019 
+    ## 226529 233117 241195 244039 244045 244051 244057 244063 244073 244083 251599 
+    ##   8070   6959   8069   3984   3536   7616   8059   7898   3749   1997   7870 
+    ## 265767 268129 271809 282164 289288 292499 
+    ##   1191   6532   2151   1230   1880   2360
+
+We see that sensor index 169187 has only one aggregated hourly record,
+which makes this sensor useless for our modeling purposes, so we remove
+it.
+
+    Purpleair_data_2025_modeling_dataset<-Purpleair_data_2025_modeling_dataset%>%
+    filter(sensor_index != 169187)
+
+The incomplete 2025 historical coverage for each sensor will not affect
+the approach to our modeling question, but it is an important
+consideration to bear in mind, as it will prevent us from investigating
+seasonal differences in model parameter estimates.
 
 # Part 3: Predictive Modeling
