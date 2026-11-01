@@ -120,7 +120,7 @@ large.
 Testing out the function: the actual distance between Loyola University
 Chicago’s Damen Center (41.9993, -87.6605) and my house (42.075814,
 -87.979072) is 17.21 miles, as measured on Google Maps. Let’s see how
-close the function approximates this distance.
+closely the function approximates this distance.
 
     test_distance<-Haversine_distance(42.000968, 42.075814, -87.659353, -87.979072)
     percent_error=abs(((test_distance-17.21)/17.21)*100)
@@ -139,15 +139,32 @@ distance calculations I need for this project.
 
 # 10/10/26: data preprocessing and aggregation (preparation for modeling)
 
-## My research question will require the aggregation of all the atmospheric variables within the PurpleAir historical data by hour. This dataset contains nearly 20 million observations, so I performed aggregations individually on smaller chunks of data to prevent R from crashing due to memory overload.
+## My research question will require the aggregation of all the atmospheric variables within the PurpleAir historical data by hour. This dataset contains nearly 20 million observations, so I performed aggregations individually on smaller chunks of data to prevent R from crashing due to memory overload. I aggregated the atmospheric variables by taking their median within each hour. I did a median aggregation instead of a mean aggregation to minimize the effect of anomalously high sensor readings due to low WiFi connectivity, high humidity, internal dust accumulation, etc.
+
+Sources of error in low cost pollution sensors:
+<https://www.researchgate.net/publication/387292652_Low-Cost_Air_Quality_Sensors_Biases_Corrections_and_Challenges_in_Their_Comparability>
+
+Discovery of PurpleAir sensor internal heating bias:
+<https://pubmed.ncbi.nlm.nih.gov/35808235/>
+
+Lance Wallace’s final correction formulas used by PurpleAir based on the
+aforementioned bias:
+
+<https://map.purpleair.com/environment-estimated-relative-humidity?opt=%2F1%2Flp%2Fa10%2Fp604800%2FcC0&select=182245#9.4/41.8253/-87.7556>
+
+<https://map.purpleair.com/environment-estimated-relative-humidity?opt=%2F1%2Flp%2Fa10%2Fp604800%2FcC0#9.4/41.8253/-87.7556>
+
+Lance Wallace’s evidence of internal heating bias:
+
+<https://www.mdpi.com/1424-8220/22/13/4741>
 
     Chunk1<-Purpleair_historical_data_2025[1:1000000, ]
-    Chunk1_averaged_by_hour<-Chunk1%>%
+    Chunk1_aggregated_by_hour<-Chunk1%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>% #Implementing peer reviewed correction formulas, which approximate ambient temperature and humidity as a function of the sensor's internal temperature and humidity (explain these in detail in the paper, and cite the paper where they originate from)
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE))  #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE))  #Takes median values of atmospheric variables for each day/hour combination for each sensor index
 
 I repeated this exact pipeline for each subsequent chunk of 1 million
 observations in Purpleair\_historical\_data\_2025, yielding a total of
@@ -155,168 +172,168 @@ observations in Purpleair\_historical\_data\_2025, yielding a total of
 the row indices used in the first line of code.
 
     Chunk2<-Purpleair_historical_data_2025[1000001:2000000, ]
-    Chunk2_averaged_by_hour<-Chunk2%>%
+    Chunk2_aggregated_by_hour<-Chunk2%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk3<-Purpleair_historical_data_2025[2000001:3000000, ]
-    Chunk3_averaged_by_hour<-Chunk3%>%
+    Chunk3_aggregated_by_hour<-Chunk3%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk4<-Purpleair_historical_data_2025[3000001:4000000, ]
-    Chunk4_averaged_by_hour<-Chunk4%>%
+    Chunk4_aggregated_by_hour<-Chunk4%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk5<-Purpleair_historical_data_2025[4000001:5000000, ]
-    Chunk5_averaged_by_hour<-Chunk5%>%
+    Chunk5_aggregated_by_hour<-Chunk5%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk6<-Purpleair_historical_data_2025[5000001:6000000, ]
-    Chunk6_averaged_by_hour<-Chunk6%>%
+    Chunk6_aggregated_by_hour<-Chunk6%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk7<-Purpleair_historical_data_2025[6000001:7000000, ]
-    Chunk7_averaged_by_hour<-Chunk7%>%
+    Chunk7_aggregated_by_hour<-Chunk7%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk8<-Purpleair_historical_data_2025[7000001:8000000, ]
-    Chunk8_averaged_by_hour<-Chunk8%>%
+    Chunk8_aggregated_by_hour<-Chunk8%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk9<-Purpleair_historical_data_2025[8000001:9000000, ]
-    Chunk9_averaged_by_hour<-Chunk9%>%
+    Chunk9_aggregated_by_hour<-Chunk9%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk10<-Purpleair_historical_data_2025[9000001:10000000, ]
-    Chunk10_averaged_by_hour<-Chunk10%>%
+    Chunk10_aggregated_by_hour<-Chunk10%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk11<-Purpleair_historical_data_2025[10000001:11000000, ]
-    Chunk11_averaged_by_hour<-Chunk11%>%
+    Chunk11_aggregated_by_hour<-Chunk11%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk12<-Purpleair_historical_data_2025[11000001:12000000, ]
-    Chunk12_averaged_by_hour<-Chunk12%>%
+    Chunk12_aggregated_by_hour<-Chunk12%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk13<-Purpleair_historical_data_2025[12000001:13000000, ]
-    Chunk13_averaged_by_hour<-Chunk13%>%
+    Chunk13_aggregated_by_hour<-Chunk13%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk14<-Purpleair_historical_data_2025[13000001:14000000, ]
-    Chunk14_averaged_by_hour<-Chunk14%>%
+    Chunk14_aggregated_by_hour<-Chunk14%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk15<-Purpleair_historical_data_2025[14000001:15000000, ]
-    Chunk15_averaged_by_hour<-Chunk15%>%
+    Chunk15_aggregated_by_hour<-Chunk15%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk16<-Purpleair_historical_data_2025[15000001:16000000, ]
-    Chunk16_averaged_by_hour<-Chunk16%>%
+    Chunk16_aggregated_by_hour<-Chunk16%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk17<-Purpleair_historical_data_2025[16000001:17000000, ]
-    Chunk17_averaged_by_hour<-Chunk17%>%
+    Chunk17_aggregated_by_hour<-Chunk17%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk18<-Purpleair_historical_data_2025[17000001:18000000, ]
-    Chunk18_averaged_by_hour<-Chunk18%>%
+    Chunk18_aggregated_by_hour<-Chunk18%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk19<-Purpleair_historical_data_2025[18000001:19000000, ]
-    Chunk19_averaged_by_hour<-Chunk19%>%
+    Chunk19_aggregated_by_hour<-Chunk19%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
     Chunk20<-Purpleair_historical_data_2025[19000001: nrow(Purpleair_historical_data_2025), ]
-    Chunk20_averaged_by_hour<-Chunk20%>%
+    Chunk20_aggregated_by_hour<-Chunk20%>%
       mutate(Day=format(time_stamp, format="%D"), Hour=format(time_stamp, format="%H"))%>%
       mutate(humidity_corrected=1.4498*humidity+7.022, temperature_corrected=1.0227*temperature-9.3755)%>%
       mutate(Single_pm2p5_measurement=ifelse(is.na(pm2p5_cf_1_b), pm2p5_cf_1_a, (pm2p5_cf_1_a+pm2p5_cf_1_b)/2))%>% #Averages the pm2p5 readings from each channel if both exist. If only the Channel A readings exist, we take that reaidng as the true pm2p5 measurement (it is never NA anywhere in the dataset).
       group_by(sensor_index, Day, Hour)%>%
-      summarize(sensor_index=first(sensor_index), average_pm2p5=mean(Single_pm2p5_measurement, na.rm=TRUE), average_humidity=mean(humidity_corrected, na.rm=TRUE), average_temperature=mean(temperature_corrected, na.rm=TRUE), average_pressure=mean(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
+      summarize(sensor_index=first(sensor_index), median_pm2p5=median(Single_pm2p5_measurement, na.rm=TRUE), median_humidity=median(humidity_corrected, na.rm=TRUE), median_temperature=median(temperature_corrected, na.rm=TRUE), median_pressure=median(pressure, na.rm=TRUE)) #Averages atmospheric variables for each day/hour combination for each sensor index
 
 I then combined the chunks back into a full dataframe.
 
-    Chunks_1_thru_5_averaged_by_hour<-bind_rows(Chunk1_averaged_by_hour, Chunk2_averaged_by_hour, Chunk3_averaged_by_hour, Chunk4_averaged_by_hour, Chunk5_averaged_by_hour)
+    Chunks_1_thru_5_aggregated_by_hour<-bind_rows(Chunk1_aggregated_by_hour, Chunk2_aggregated_by_hour, Chunk3_aggregated_by_hour, Chunk4_aggregated_by_hour, Chunk5_aggregated_by_hour)
 
-    Chunks_6_thru_10_averaged_by_hour<-bind_rows(Chunk6_averaged_by_hour, Chunk7_averaged_by_hour, Chunk8_averaged_by_hour, Chunk9_averaged_by_hour, Chunk10_averaged_by_hour)
+    Chunks_6_thru_10_aggregated_by_hour<-bind_rows(Chunk6_aggregated_by_hour, Chunk7_aggregated_by_hour, Chunk8_aggregated_by_hour, Chunk9_aggregated_by_hour, Chunk10_aggregated_by_hour)
 
-    Chunks_11_thru_15_averaged_by_hour<-bind_rows(Chunk11_averaged_by_hour, Chunk12_averaged_by_hour, Chunk13_averaged_by_hour, Chunk14_averaged_by_hour, Chunk15_averaged_by_hour)
+    Chunks_11_thru_15_aggregated_by_hour<-bind_rows(Chunk11_aggregated_by_hour, Chunk12_aggregated_by_hour, Chunk13_aggregated_by_hour, Chunk14_aggregated_by_hour, Chunk15_aggregated_by_hour)
 
-    Chunks_16_thru_20_averaged_by_hour<-bind_rows(Chunk16_averaged_by_hour, Chunk17_averaged_by_hour, Chunk18_averaged_by_hour, Chunk19_averaged_by_hour, Chunk20_averaged_by_hour)
+    Chunks_16_thru_20_aggregated_by_hour<-bind_rows(Chunk16_aggregated_by_hour, Chunk17_aggregated_by_hour, Chunk18_aggregated_by_hour, Chunk19_aggregated_by_hour, Chunk20_aggregated_by_hour)
 
-    Purpleair_historical_data_2025_averaged_by_hour<-bind_rows(Chunks_1_thru_5_averaged_by_hour, Chunks_6_thru_10_averaged_by_hour, Chunks_11_thru_15_averaged_by_hour, Chunks_16_thru_20_averaged_by_hour) 
+    Purpleair_historical_data_2025_aggregated_by_hour<-bind_rows(Chunks_1_thru_5_aggregated_by_hour, Chunks_6_thru_10_aggregated_by_hour, Chunks_11_thru_15_aggregated_by_hour, Chunks_16_thru_20_aggregated_by_hour) 
 
 To account for instances in which the readings within a given hour for a
 given sensor index were split between multiple chunks, I needed to
@@ -325,17 +342,17 @@ me to do this after I noticed that the lagged predictors contained NA
 values at the beginning of each new day, instead of at the position
 where the sensor index changes (which is what I need).
 
-    Purpleair_historical_data_2025_averaged_by_hour_averaged_again<-Purpleair_historical_data_2025_averaged_by_hour%>%
+    Purpleair_historical_data_2025_aggregated_by_hour_aggregated_again<-Purpleair_historical_data_2025_aggregated_by_hour%>%
     ungroup()%>%
     group_by(sensor_index, Day, Hour)%>%
-    summarize(average_pm2p5=mean(average_pm2p5, na.rm=TRUE), average_humidity=mean(average_humidity, na.rm=TRUE), average_temperature=mean(average_temperature, na.rm=TRUE), average_pressure=mean(average_pressure, na.rm=TRUE))
+    summarize(median_pm2p5=median(median_pm2p5, na.rm=TRUE), median_humidity=median(median_humidity, na.rm=TRUE), median_temperature=median(median_temperature, na.rm=TRUE), median_pressure=median(median_pressure, na.rm=TRUE))
 
 Then, I removed the individual data chunks to save memory in my R
 session, now that the full dataset has been obtained.
 
     rm(Chunk1, Chunk2, Chunk3, Chunk4, Chunk5, Chunk6, Chunk7, Chunk8, Chunk9, Chunk10, Chunk11, Chunk12, Chunk13, Chunk14, Chunk15, Chunk16, Chunk17, Chunk18, Chunk19, Chunk20)
-    rm(Chunk1_averaged_by_hour, Chunk2_averaged_by_hour, Chunk3_averaged_by_hour, Chunk4_averaged_by_hour, Chunk5_averaged_by_hour, Chunk6_averaged_by_hour, Chunk7_averaged_by_hour, Chunk8_averaged_by_hour, Chunk9_averaged_by_hour, Chunk10_averaged_by_hour, Chunk11_averaged_by_hour, Chunk12_averaged_by_hour, Chunk13_averaged_by_hour, Chunk14_averaged_by_hour, Chunk15_averaged_by_hour, Chunk16_averaged_by_hour, Chunk17_averaged_by_hour, Chunk18_averaged_by_hour, Chunk19_averaged_by_hour, Chunk20_averaged_by_hour)
-    rm(Chunks_1_thru_5, Chunks_1_thru_5_averaged_by_hour, Chunks_6_thru_10_averaged_by_hour, Chunks_11_thru_15_averaged_by_hour, Chunks_16_thru_20_averaged_by_hour)
+    rm(Chunk1_aggregated_by_hour, Chunk2_aggregated_by_hour, Chunk3_aggregated_by_hour, Chunk4_aggregated_by_hour, Chunk5_aggregated_by_hour, Chunk6_aggregated_by_hour, Chunk7_aggregated_by_hour, Chunk8_aggregated_by_hour, Chunk9_aggregated_by_hour, Chunk10_aggregated_by_hour, Chunk11_aggregated_by_hour, Chunk12_aggregated_by_hour, Chunk13_aggregated_by_hour, Chunk14_aggregated_by_hour, Chunk15_aggregated_by_hour, Chunk16_aggregated_by_hour, Chunk17_aggregated_by_hour, Chunk18_aggregated_by_hour, Chunk19_aggregated_by_hour, Chunk20_aggregated_by_hour)
+    rm(Chunks_1_thru_5_aggregated_by_hour, Chunks_6_thru_10_aggregated_by_hour, Chunks_11_thru_15_aggregated_by_hour, Chunks_16_thru_20_aggregated_by_hour)
 
 Then I used the dataset of Chicago pollution sources, the Purpleair
 sensor information data, and the Haversine distance function I
@@ -349,7 +366,7 @@ accomplished it successfully, except for one important detail: it does
 not ensure that facilities are not duplicated.
 
     Purpleair_sensor_information_relevant<-Purpleair_sensor_information%>%
-    filter(sensor_index %in% Purpleair_historical_data_2025_averaged_by_hour$sensor_index) #116 out of 152 total indices are in the 2025 historical data
+    filter(sensor_index %in% Purpleair_historical_data_2025_aggregated_by_hour_aggregated_again$sensor_index) #116 out of 152 total indices are in the 2025 historical data
     Relevant_sensor_indices<-Purpleair_sensor_information_relevant$sensor_index
 
     final_output_list<-list()
@@ -414,7 +431,7 @@ time):
 
     final_output_list <- list()
 
-    for (i in seq_along(vec)) {
+    for (i in seq_along(Relevant_sensor_indices)) {
       
       # Calculate the distance from this sensor to every pollution source
       distances_to_pollution_sources <- vapply(
@@ -515,7 +532,7 @@ I then joined
 Purpleair\_historical\_data\_2025\_averaged\_by\_hour\_averaged\_again
 to Purpleair\_sensor\_information\_relevant\_expanded.
 
-    Purpleair_data_2025_hourly_averages<-Purpleair_historical_data_2025_averaged_by_hour_averaged_again%>%
+    Purpleair_data_2025_hourly_averages<-Purpleair_historical_data_2025_aggregated_by_hour_aggregated_again%>%
     left_join(Purpleair_sensor_information_relevant_expanded, by=c("sensor_index"="sensor_index"))%>%
     select(-latitude, -longitude) #We don't need the latitude or longitude anymore because we have already used them to calculate the 1st-5th closest pollution source distances. 
 
@@ -524,27 +541,26 @@ research question: calculating the hourly lagged predictors based on the
 raw hourly measurements of pm2p5, humidity, temperature, and pressure,
 in order to remove time dependency at the hourly scale.
 
-    Purpleair_data_2025_modeling_dataset<-Purpleair_data_2025_hourly_averages%>%
-    arrange(sensor_index, Day, Hour)%>%
-    group_by(sensor_index)%>%
-      
-    mutate(sensor_index=sensor_index, Day=Day, Hour=Hour, closest_source_distance=closest_source_distance, second_closest_source_distance=second_closest_source_distance, third_closest_source_distance=third_closest_source_distance, fourth_closest_source_distance=fourth_closest_source_distance, fifth_closest_source_distance=fifth_closest_source_distance, 
-              closest_source_2025_pm2p5=closest_source_2025_pm2p5, second_closest_source_2025_pm2p5=second_closest_source_2025_pm2p5, third_closest_source_2025_pm2p5=third_closest_source_2025_pm2p5, fourth_closest_source_2025_pm2p5=fourth_closest_source_2025_pm2p5, fifth_closest_source_2025_pm2p5=fifth_closest_source_2025_pm2p5)%>%
-      
-    mutate(
-        observation_time = as.POSIXct(
-          paste(Day, sprintf("%02d:00:00", Hour)),
-          format = "%Y-%m-%d %H:%M:%S",
-          tz = "UTC"
-        ),
+    library(dplyr)
+    library(lubridate) 
+
+    Purpleair_data_2025_modeling_dataset <- Purpleair_data_2025_hourly_averages %>%
+      arrange(sensor_index, Day, Hour) %>%
+      group_by(sensor_index) %>%
+      mutate(
+        observation_time = mdy_h(paste(Day, Hour), tz = "UTC"),
         
         time_difference = as.numeric(
           difftime(observation_time, lag(observation_time), units = "hours")
         ),
         
-        pm2p5_hourly_difference=ifelse(time_difference==1, average_pm2p5-lag(average_pm2p5), NA),
-        humidity_hourly_difference=ifelse(time_difference==1, average_humidity-lag(average_humidity), NA),     temperature_hourly_difference=ifelse(time_difference==1, average_temperature-lag(average_temperature), pressure_hourly_difference=ifelse(time_difference==1, average_pressure-lag(average_pressure))%>%
-    select(-average_pm2p5, -average_humidity, -average_temperature, -average_pressure) #I don't need the raw hourly averages for the modeling
+        pm2p5_hourly_difference       = ifelse(time_difference == 1, median_pm2p5 - lag(median_pm2p5), NA),
+        humidity_hourly_difference    = ifelse(time_difference == 1, median_humidity - lag(median_humidity), NA),
+        temperature_hourly_difference = ifelse(time_difference == 1, median_temperature - lag(median_temperature), NA),
+        pressure_hourly_difference    = ifelse(time_difference == 1, median_pressure - lag(median_pressure), NA)
+      ) %>% 
+      select(-median_pm2p5, -median_humidity, -median_temperature, -median_pressure) %>% #I don't need the raw hourly averages for the modeling
+      ungroup()
 
 This places NA values for the lagged predictors at positions where the
 data switches to a new sensor index. This is very important because
@@ -564,11 +580,17 @@ between variables.
     group_by(sensor_index)%>%
     summarize(num_atmospheric_NAs=sum(is.na(pm2p5_hourly_difference) | is.na(humidity_hourly_difference) | is.na(temperature_hourly_difference) | is.na(pressure_hourly_difference)))
 
-    #Unfortunately, 9 of the sensors had more than 1 NA value for the hourly lagged atmospheric predictors. 
+    which(is.na(Purpleair_data_2025_modeling_dataset$pm2p5_hourly_difference))
+
+    a<-Purpleair_data_2025_modeling_dataset[4381, ]
+    a$pm2p5_hourly_difference
+
+    #Unfortunately, 9 of the sensors had more than 168 NA values for the hourly lagged atmospheric predictors (hourly aggreagted data is considered sparse for these sensors, as more than 7 total days, 1 week, of tempoerally lagged were missing).
 
     sensor_indices_to_remove<-num_NAs_per_sensor%>%
-    filter(num_atmospheric_NAs>1)%>%
+    filter(num_atmospheric_NAs>168)%>%
     select(sensor_index)
+    sensor_indices_to_remove$sensor_index
 
     Purpleair_data_2025_modeling_dataset_cleaned<-Purpleair_data_2025_modeling_dataset%>%
     filter(!(sensor_index %in% sensor_indices_to_remove$sensor_index))
@@ -619,19 +641,22 @@ pressure differences that must be removed.
 
 The temperature differences variable is also symmetric with a mean very
 close to zero. The NOAA states that hourly changes in temperature
-exceeding 35 degrees F are anomalous. None of the hourly changes in
-temperature in the dataset exceed the NOAA threshold, so there are no
+exceeding 35 degrees F are anomalous. There are hourly changes in
+temperature in the dataset exceed the NOAA threshold, so there are some
 additional outliers with respect to temperature.
 
 In conclusion, I need to remove observations in which the hourly change
-in average pm2p5 is greater than 500 micrograms per cubic meter and the
-hourly change in average pressure is greater than 15 millibars. However,
-I must be careful when removing these observations, because the removal
-of observations places observations that are separated by greater than 1
-hour adjacent to one another, which would destroy the temporal lag
-previously established. The
+in median pm2p5 is greater than 500 micrograms per cubic meter and the
+hourly change in median pressure is greater than 15 millibars and the
+hourly change in kedian temperature is greater than 35 degrees F.
+However, I must be careful when removing these observations, because the
+removal of observations places observations that are separated by
+greater than 1 hour adjacent to one another, which would destroy the
+temporal lag previously established.
 
-    vector_obs_to_remove<-which(abs(Purpleair_data_2025_modeling_dataset_cleaned$pm2p5_hourly_difference) > 500 | abs(Purpleair_data_2025_modeling_dataset_cleaned$pressure_hourly_difference) > 15)
+NOAA source:
+
+    vector_obs_to_remove<-which(abs(Purpleair_data_2025_modeling_dataset_cleaned$pm2p5_hourly_difference) > 500 | abs(Purpleair_data_2025_modeling_dataset_cleaned$pressure_hourly_difference) > 15 | abs(Purpleair_data_2025_modeling_dataset_cleaned$temperature_hourly_difference > 35))
     length(vector_obs_to_remove)
 
     vector_obs_to_invalidate<-vector_obs_to_remove+1
@@ -650,25 +675,729 @@ previously established. The
 ET VOILA: THIS is our final, cleaned, aggregated dataset fully prepared
 for predictive modeling.
 
+    library(tidyverse)
+
+    Purpleair_data_2025_modeling_dataset_squeaky_clean<-write.csv(Purpleair_data_2025_modeling_dataset_squeaky_clean, "Purpleair_data_2025_modeling_dataset_squeaky_clean.csv", row.names = FALSE)
+
+    Purpleair_data_2025_modeling_dataset_squeaky_clean<-read_csv("~/Desktop/STAT_338/STAT_338/Final_project/STAT_338_Final_Project/Purpleair_data_2025_modeling_dataset_squeaky_clean.csv")
+
+    ## Rows: 623638 Columns: 19
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr   (2): Day, Hour
+    ## dbl  (16): sensor_index, closest_source_distance, second_closest_source_dist...
+    ## dttm  (1): observation_time
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
 Calculation of final descriptive statistics for the variables in the
 fully cleaned dataset
 
-    hist(Purpleair_data_2025_modeling_dataset_squeaky_clean$pm2p5_hourly_difference)
+    hist(Purpleair_data_2025_modeling_dataset_squeaky_clean$pm2p5_hourly_difference, breaks=50)
     summary(Purpleair_data_2025_modeling_dataset_squeaky_clean$pm2p5_hourly_difference)
 
-    hist(Purpleair_data_2025_modeling_dataset_squeaky_clean$temperature_hourly_difference)
+    hist(Purpleair_data_2025_modeling_dataset_squeaky_clean$temperature_hourly_difference, breaks=50)
     summary(Purpleair_data_2025_modeling_dataset_squeaky_clean$temperature_hourly_difference)
 
-    hist(Purpleair_data_2025_modeling_dataset_squeaky_clean$humidity_hourly_difference)
+    hist(Purpleair_data_2025_modeling_dataset_squeaky_clean$humidity_hourly_difference, breaks=50)
     summary(Purpleair_data_2025_modeling_dataset_squeaky_clean$humidity_hourly_difference)
 
-    hist(Purpleair_data_2025_modeling_dataset_squeaky_clean$pressure_hourly_difference, breaks=20)
+    hist(Purpleair_data_2025_modeling_dataset_squeaky_clean$pressure_hourly_difference, breaks=50)
     summary(Purpleair_data_2025_modeling_dataset_squeaky_clean$pressure_hourly_difference)
 
 The pm2p5\_hourly\_difference, temperature\_hourly\_difference,
 humidity\_hourly\_difference, and pressure\_hourly\_difference variables
 all follow symmetric distributions with sample means close to zero.
 
+Now, Purpleair sensors do not collect data on wind speed and direction,
+two of the most important meteorological variables determining pollutant
+dispersion. So, I gathered hourly wind speed and direction measurements
+from an Iowa State University Webpage form which I downloaded readings
+from a station located at Midway, in Chicago (I make a simplification by
+allowing readings from this sensor to be representative of ambient
+conditions for all Chicago PurplAair sensors).
+
+    library(tidyverse)
+    library(lubridate)
+
+    Midway_wind_data<-read_csv("~/Desktop/STAT_338/STAT_338/Final_project/STAT_338_Final_Project/Midway_station_wind_data.csv")
+
+    ## New names:
+    ## • `` -> `...4`
+    ## • `` -> `...5`
+
+    ## Warning: One or more parsing issues, call `problems()` on your data frame for details,
+    ## e.g.:
+    ##   dat <- vroom(...)
+    ##   problems(dat)
+
+    ## Rows: 10049 Columns: 5
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr (1): Timestamp
+    ## dbl (2): Wind_speed_mph, Wind_direction
+    ## lgl (2): ...4, ...5
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+    sum(is.na(Midway_wind_data$Wind_direction))
+
+    ## [1] 82
+
+    sum(is.na(Midway_wind_data$Wind_speed_mph))
+
+    ## [1] 0
+
+    #No NA values for wind speed, 82 NA values for wind direction
+
+    colnames(Midway_wind_data)
+
+    ## [1] "Timestamp"      "Wind_speed_mph" "Wind_direction" "...4"          
+    ## [5] "...5"
+
+    Midway_wind_data_cleaned<-Midway_wind_data%>%
+    select(-4, -5)%>%
+    mutate(Timestamp=mdy_hm(Timestamp))%>%
+    arrange(Timestamp)%>%
+    mutate(Day=format(Timestamp, format="%D"))%>%
+    mutate(Hour=format(Timestamp, format="%H"))%>%#Creating day and hour variables to match the Purpleair_modeling_dataset_squeaky_clean so that we can join by these variables
+    group_by(Day, Hour)%>%
+    group_by(Day, Hour) %>%
+    summarize(
+      median_wind_speed_mph = if (all(is.na(Wind_speed_mph))) {
+        NA_real_
+      } else {
+        median(Wind_speed_mph, na.rm = TRUE)
+      },
+      median_wind_direction = if (all(is.na(Wind_direction))) {
+        NA_real_
+      } else {
+        median(Wind_direction, na.rm = TRUE)
+      },
+      .groups = "drop"
+    )%>%
+    mutate(
+      Hour_timestamp = as.POSIXct(
+        paste(Day, Hour),
+        format = "%m/%d/%y %H",
+        tz = "America/Chicago"
+      ),
+      time_difference = as.numeric(
+        difftime(Hour_timestamp, lag(Hour_timestamp), units = "hours")
+      ),
+      Wind_direction_hourly_difference = ifelse(
+        time_difference == 1 & 
+        !is.na(median_wind_direction) &
+          !is.na(lag(median_wind_direction)),
+        ((median_wind_direction - lag(median_wind_direction) + 180) %% 360) - 180,
+        NA_real_
+      ),
+      Wind_speed_hourly_difference = ifelse(
+        time_difference == 1 &
+        !is.na(median_wind_speed_mph) &
+          !is.na(lag(median_wind_speed_mph)),
+        median_wind_speed_mph - lag(median_wind_speed_mph),
+        NA_real_
+      ))%>%
+    select(Day, Hour, Wind_speed_hourly_difference, Wind_direction_hourly_difference)
+
+    Purpleair_final_2025_modeling_dataset<-Purpleair_data_2025_modeling_dataset_squeaky_clean%>%
+    left_join(Midway_wind_data_cleaned, by=c("Day", "Hour"))%>%
+    select(-time_difference, -observation_time)
+
+THIS IS OUR FINAL DATASET FOR PREDICTIVE MODELING. PHEW!!!!!
+
 # Part 3: Predictive Modeling
 
-### 10/22/26:
+PIT STOP: before I dive into predictive modeling, I will remind myself
+of the variables in the final dataset I wish to use (there are 19):
+
+    colnames(Purpleair_final_2025_modeling_dataset)
+
+    ##  [1] "sensor_index"                     "Day"                             
+    ##  [3] "Hour"                             "closest_source_distance"         
+    ##  [5] "second_closest_source_distance"   "third_closest_source_distance"   
+    ##  [7] "fourth_closest_source_distance"   "fifth_closest_source_distance"   
+    ##  [9] "closest_source_2025_pm2p5"        "second_closest_source_2025_pm2p5"
+    ## [11] "third_closest_source_2025_pm2p5"  "fourth_closest_source_2025_pm2p5"
+    ## [13] "fifth_closest_source_2025_pm2p5"  "pm2p5_hourly_difference"         
+    ## [15] "humidity_hourly_difference"       "temperature_hourly_difference"   
+    ## [17] "pressure_hourly_difference"       "Wind_speed_hourly_difference"    
+    ## [19] "Wind_direction_hourly_difference"
+
+1.  pm2p5\_hourly\_difference: the difference in the median hourly pm2p5
+    concentrations (in micrograms per cubic meter) for a given sensor
+    index between a given hour and the previous hour: this is my
+    response variable
+
+2.  temperature\_hourly\_difference: the difference in the median hourly
+    temperature (in degrees F) for a given sensor index between a given
+    hour and the previous hour. To more accurately estimate ambient
+    temperature, sensor temperature readings were adjusted using
+    established correction formulas to account for the increased
+    temperature caused by the sensor’s internal hardware.
+
+3.  pressure\_hourly\_difference: the difference in the median
+    atmospheric pressure for a given sensor index between a given hour
+    and the previous hour
+
+4.  humidity\_hourly\_difference: the difference in the median hourly
+    relative humidity (as a percentage) for a given sensor index between
+    a given hour and the previous hour. To more accurately estimate
+    ambient humidity, sensor humidity readings were adjusted using
+    established correction formulas to account for the decreased
+    humidity caused by the sensor’s internal hardware.
+
+5.  Day: the calendar date of a given observation
+
+6.  Hour: the hour over which the readings of a given observation are
+    aggregated
+
+7.  First/second/third/fourth/fifth\_closest\_source\_distance: the
+    nearest five air pollution sources to each sensor index (distances
+    calculated using the Haversine formula) based on a curated dataset
+    of 53 Chicago air pollution sources from the ClimateTrace website
+
+8.  First/second/third/fourth/fifth\_closest\_source\_2025\_pm2p5: the
+    2025 air pollution emissions (in tons) from each of the five nearest
+    air pollution sources to a given sensor index
+
+9.  Wind\_speed\_hourly\_difference: the difference in the median wind
+    speed, as measured by the Midway station, for a given hour and the
+    median wind speed of the previous hour (in most cases, there was
+    only one measurement per hour, so in such cases, this variable is
+    the difference between those consecutive hourly measurements).
+
+10. Wind\_direction\_hourly\_difference: the difference in the median
+    wind direction, as measured by the Midway station, in degrees from
+    true north, for a given hour and the median wind speed of the
+    previous hour (positive values represent clockwise changes, negative
+    values represent counterclockwise changes)
+
+### 10/22/26: investigating the predictive performance of standard OLS regression using grouped time series 10 fold cross validation
+
+I begin with standard OLS regression, using all 18 predictors and all
+first order interaction terms between temperature\_hourly\_difference,
+humidity\_hourly\_difference, and pressure\_hourly\_difference. The a
+priori reason for including the interaction terms is because
+temperature, pressure, and humidity all share close physical
+relationships: for a constant volume of air, increasing air temperature
+increases air pressure and decreases relative humidity. Conversely,
+subjecting an air mass to increasing pressure from the weight of the air
+above it increases its temperature, which decreases its relative
+humidity. This is the maximum model I wish to consider.
+
+Two issues with standard k fold cross validation:
+
+1.  since the predictors and the response are lagged, our estimate of
+    cross validation error will be artificially low due to data leakage,
+    since one hour in the training set could have an adjacent hour in
+    the test set. This is true even though we took the difference of the
+    predictors and the response, and we thus need to account for short
+    term autocorrelation.
+
+2.  Since my goal is to evaluate how well the model predicts future
+    hourly changes in pm2.5 for the same sensor locations, I split each
+    individual sensor’s time interval into past training blocks and
+    future testing blocks. This was suggested by ChatGPT and is a
+    technique called Grouped Time Series Cross Validation.
+
+This article provides a good description of grouped and temporal
+violations of the independence assumption for standard cross validation
+and the reason why this technique is necessary (cite it in your paper):
+
+<https://learnmlfast.org/blog/grouped-and-time-series-cross-validation>
+
+To assess whether stand OLS regression is appropriate given my data, I
+fit an OLS model on the entire dataset.
+
+    Overall_OLS_model<-lm(pm2p5_hourly_difference ~ Hour+closest_source_distance+second_closest_source_distance+third_closest_source_distance+fourth_closest_source_distance+fifth_closest_source_distance+ closest_source_2025_pm2p5+second_closest_source_2025_pm2p5+third_closest_source_2025_pm2p5+fourth_closest_source_2025_pm2p5+fifth_closest_source_2025_pm2p5+humidity_hourly_difference+temperature_hourly_difference+pressure_hourly_difference+Wind_speed_hourly_difference+Wind_direction_hourly_difference+temperature_hourly_difference*humidity_hourly_difference+temperature_hourly_difference*pressure_hourly_difference+pressure_hourly_difference*humidity_hourly_difference, data=Purpleair_final_2025_modeling_dataset)
+
+    plot(Overall_OLS_model, 1)
+
+![](STAT_338_Project_Codes_files/figure-markdown_strict/unnamed-chunk-32-1.png)
+
+    plot(Overall_OLS_model, 2)
+
+![](STAT_338_Project_Codes_files/figure-markdown_strict/unnamed-chunk-32-2.png)
+Massive violations of homoskedasticity and residual normality indicate
+that OLS regression is not appropriate for the data. The violations
+appear to stem from the fact that the predictors and the response are
+all very heavily clustered aorund zero, to a larger degree than is
+present in normal distributions.
+
+This means that my final model will not be an OLS model or OLS subsetted
+with variable selection done via best subset selection or either
+stepwise method, and it also won’t be a variant of OLS such as lasso or
+ridge regression because those retain the OLS assumptions(my final model
+will be a nonlinear one). However, for the purpose of establishing a
+baseline for comparison with nonlinear models, I will calculate the 10
+fold cross validation error of the OLS model.
+
+First, I drop all rows that are NA, since my cross validation technique
+will split by blocks of time.
+
+    grouped_time_series_cv_ready_data<-Purpleair_final_2025_modeling_dataset[complete.cases(Purpleair_final_2025_modeling_dataset), ]
+
+Then, I split the time interval chronologically for each sensor index
+separately. Doing this ensures that, during the k fold cross validation,
+the model is never tested on sensor indices it has already seen during
+training, and is also never tested on the same hours it saw during
+training, thereby fixing the two dependence issues.
+
+    set.seed(1)
+    fold_assignments<-numeric(nrow(grouped_time_series_cv_ready_data)) #instantiates a vector of all zeros
+    unique_sensors<-unique(grouped_time_series_cv_ready_data$sensor_index)
+
+    for(sensor in unique_sensors){
+      indices<-which(grouped_time_series_cv_ready_data$sensor_index == sensor)
+      num_sensor_rows<-length(indices)
+      sensor_folds<-cut(seq_len(num_sensor_rows), breaks=10, labels=FALSE)
+      fold_assignments[indices] <- sensor_folds}
+
+    test_MSE_values<-c()
+
+    for(i in 2:10){ #We iterate from folds 2 through 10 because fold 1 has no past data to train on
+      test_indices<-which(fold_assignments==i)
+      training_indices<-which(fold_assignments < i) #This modification of standard K fold cross validatio code causes the model to only train on past data for all sensors, preventing the model from peeking into the future while training. It allows a specific sensor index to exist in both the training and test sets, but it does not allow future observations from the same sensor to exist in the training set.
+      
+      test_data<-grouped_time_series_cv_ready_data[test_indices, ]
+      training_data<-grouped_time_series_cv_ready_data[training_indices, ]
+
+      OLS_regression_model<-lm(pm2p5_hourly_difference ~ Hour+closest_source_distance+second_closest_source_distance+third_closest_source_distance+fourth_closest_source_distance+fifth_closest_source_distance+ closest_source_2025_pm2p5+second_closest_source_2025_pm2p5+third_closest_source_2025_pm2p5+fourth_closest_source_2025_pm2p5+fifth_closest_source_2025_pm2p5+humidity_hourly_difference+temperature_hourly_difference+pressure_hourly_difference+Wind_speed_hourly_difference+Wind_direction_hourly_difference+temperature_hourly_difference*humidity_hourly_difference+temperature_hourly_difference*pressure_hourly_difference+pressure_hourly_difference*humidity_hourly_difference, data=training_data)
+      
+      test_MSE<-mean((test_data$pm2p5_hourly_difference-predict(OLS_regression_model, test_data))^2)
+      test_MSE_values<-c(test_MSE_values, test_MSE)}
+      
+    OLS_CV_error<-mean(test_MSE_values)  
+    OLS_CV_error
+
+    ## [1] 244.4548
+
+OLS CV error: 244.4548
+
+Nonlinear method 1: K nearest neighbors regression:
+
+I perform K nearest neighbors regression with 10 values of k: 1, 100,
+200, 300, 400, 500, 600, 700, 800, and 900. I choose large k values
+because my sample size is on the order of hundreds of thousands;
+therefore, the curse of dimensionality that results from a large number
+of predictors and a large k value will be much less pronounced.
+
+    install.packages("GPfit")
+    install.packages("tidymodels")
+    library(tidymodels)
+
+    set.seed(1)
+    fold_assignments<-numeric(nrow(grouped_time_series_cv_ready_data)) #instantiates a vector of all zeros
+    unique_sensors<-unique(grouped_time_series_cv_ready_data$sensor_index)
+
+    for(sensor in unique_sensors){
+      indices<-which(grouped_time_series_cv_ready_data$sensor_index == sensor)
+      num_sensor_rows<-length(indices)
+      sensor_folds<-cut(seq_len(num_sensor_rows), breaks=10, labels=FALSE)
+      fold_assignments[indices] <- sensor_folds}
+
+    k_values<-c(1, 100, 200, 300, 400, 500, 600, 700, 800, 900)
+      
+    for (value in k_values){
+      test_MSE_values<-c()
+      
+      for(i in 2:10){ 
+      test_indices<-which(fold_assignments==i)
+      training_indices<-which(fold_assignments < i) 
+      
+      test_data<-grouped_time_series_cv_ready_data[test_indices, ]
+      training_data<-grouped_time_series_cv_ready_data[training_indices, ]
+
+      knn_recipe<-recipe(pm2p5_hourly_difference ~ Hour+closest_source_distance+second_closest_source_distance+third_closest_source_distance+fourth_closest_source_distance+fifth_closest_source_distance+ closest_source_2025_pm2p5+second_closest_source_2025_pm2p5+third_closest_source_2025_pm2p5+fourth_closest_source_2025_pm2p5+fifth_closest_source_2025_pm2p5+humidity_hourly_difference+temperature_hourly_difference+pressure_hourly_difference, data=training_data)%>%
+      step_interact(terms = ~ temperature_hourly_difference:humidity_hourly_difference) %>%
+      step_interact(terms = ~ temperature_hourly_difference:pressure_hourly_difference) %>%
+      step_interact(terms = ~ pressure_hourly_difference:humidity_hourly_difference) %>%
+      step_normalize(all_predictors()) # CRITICAL: Add scaling for kNN distance calculations!
+      
+      knn_spec<-nearest_neighbor(neighbors=value, weight_func="rectangular")%>%
+        set_engine("kknn")%>%
+        set_mode("regression")
+      
+      knn_workflow<-workflow()%>%
+        add_recipe(knn_recipe)%>%
+        add_model(knn_spec)
+      
+      knn_fit<-fit(knn_workflow, data=training_data)
+      predictions<-predict(knn_fit, test_data)$.pred
+      test_MSE_value<-mean((test_data$pm2p5_hourly_difference-predictions)^2)
+      test_MSE_values<-c(test_MSE_values, test_MSE_value)}
+      
+      CV_error<-mean(test_MSE_values)
+      print(c(value, CV_error))}
+
+This nested for loop took forever to run. Here is a version that does
+not use loops, optimized by AI and which uses robust normalization
+instead of standard normalization (scaling each predictor by its median
+and IQR instead of by its mean and standard deviation, which is more
+robust to statistical outliers).
+
+    library(tidymodels)
+    library(dplyr)
+
+    # Ensure the fast matrix library is installed and loaded
+    if (!requireNamespace("FNN", quietly = TRUE)) install.packages("FNN")
+    library(FNN)
+
+
+    set.seed(1)
+
+    # =========================================================================
+    # STEP 1: VECTORIZED FOLD ASSIGNMENT
+    # =========================================================================
+    cv_data <- grouped_time_series_cv_ready_data %>%
+      group_by(sensor_index) %>%
+      mutate(fold = cut(seq_len(n()), breaks = 10, labels = FALSE)) %>%
+      ungroup()
+
+    # =========================================================================
+    # STEP 2: PRE-BAKE THE RECIPE EXACTLY ONCE (Fixed to retain fold)
+    # =========================================================================
+    fast_recipe <- recipe(
+      pm2p5_hourly_difference ~ Hour + closest_source_distance +
+        second_closest_source_distance +
+        third_closest_source_distance +
+        fourth_closest_source_distance +
+        fifth_closest_source_distance +
+        closest_source_2025_pm2p5 +
+        second_closest_source_2025_pm2p5 +
+        third_closest_source_2025_pm2p5 +
+        fourth_closest_source_2025_pm2p5 +
+        fifth_closest_source_2025_pm2p5 +
+        humidity_hourly_difference +
+        temperature_hourly_difference +
+        pressure_hourly_difference,
+      data = cv_data
+    ) %>%
+      step_impute_median(all_numeric_predictors()) %>%
+      step_dummy(all_factor_predictors()) %>%
+      step_zv(all_predictors()) %>%
+      step_interact(
+        terms = ~ temperature_hourly_difference:humidity_hourly_difference
+      ) %>%
+      step_interact(
+        terms = ~ temperature_hourly_difference:pressure_hourly_difference
+      ) %>%
+      step_interact(
+        terms = ~ pressure_hourly_difference:humidity_hourly_difference
+      )
+
+    # =========================================================================
+    # STEP 3: CONVERT TO MATRICES & STRIP ANY REMAINING INF/NA VALUES
+    # =========================================================================
+    folds_vec   <- processed_df$fold
+    y_vals_vec  <- processed_df$pm2p5_hourly_difference
+
+    # Select features/predictors safely now that fold is guaranteed to exist
+    x_matrix <- processed_df %>% 
+      select(-fold, -pm2p5_hourly_difference) %>% 
+      as.matrix()
+
+    # Force any unexpected infinite/NaN values to 0
+    x_matrix[!is.finite(x_matrix)] <- 0
+
+
+
+    robust_normalize <- function(train_data, test_data, outcome) {
+
+      # Identify numeric predictors, excluding the response
+      predictors <- names(train_data)[
+        sapply(train_data, is.numeric)
+      ]
+
+      predictors <- setdiff(predictors, outcome)
+
+      # Calculate statistics using training data ONLY
+      medians <- sapply(
+        train_data[predictors],
+        median,
+        na.rm = TRUE
+      )
+
+      iqrs <- sapply(
+        train_data[predictors],
+        IQR,
+        na.rm = TRUE
+      )
+
+      # Prevent division by zero for predictors with zero IQR
+      iqrs[iqrs == 0] <- 1
+
+      # Apply training statistics to training and test data
+      train_data[predictors] <- sweep(
+        sweep(as.matrix(train_data[predictors]), 2, medians, "-"),
+        2, iqrs, "/"
+      )
+
+      test_data[predictors] <- sweep(
+        sweep(as.matrix(test_data[predictors]), 2, medians, "-"),
+        2, iqrs, "/"
+      )
+
+      list(
+        train = train_data,
+        test = test_data
+      )
+    }
+
+
+    # =========================================================================
+    # STEP 4: SAFE TUNING LOOP WITH ERROR CATCHING
+    # =========================================================================
+    k_values <- c(795, 796, 797, 798, 799, 800, 801, 802, 803, 804, 805)
+
+    results_matrix <- matrix(
+      NA_real_,
+      nrow = 9,
+      ncol = length(k_values)
+    )
+
+    colnames(results_matrix) <- k_values
+
+    for (i in 2:10) {
+
+      cat("\nProcessing Fold:", i, "\n")
+
+      # Separate historical training observations and future test observations
+      training_data <- cv_data %>%
+        filter(fold < i) %>%
+        select(-fold)
+
+      testing_data <- cv_data %>%
+        filter(fold == i) %>%
+        select(-fold)
+
+      # Prep recipe using ONLY historical training data
+      prepared_recipe <- prep(
+        fast_recipe,
+        training = training_data
+      )
+
+      # Apply imputation, dummy encoding, and interactions
+      processed_train <- bake(
+        prepared_recipe,
+        new_data = training_data
+      )
+
+      processed_test <- bake(
+        prepared_recipe,
+        new_data = testing_data
+      )
+
+      # Apply robust normalization using training statistics
+      normalized_data <- robust_normalize(
+        train_data = processed_train,
+        test_data = processed_test,
+        outcome = "pm2p5_hourly_difference"
+      )
+
+      processed_train <- normalized_data$train
+      processed_test <- normalized_data$test
+
+      # Convert predictors to matrices
+      X_train_full <- processed_train %>%
+        select(-pm2p5_hourly_difference) %>%
+        as.matrix()
+
+      Y_train_full <- processed_train$pm2p5_hourly_difference
+
+      X_test_full <- processed_test %>%
+        select(-pm2p5_hourly_difference) %>%
+        as.matrix()
+
+      Y_test_full <- processed_test$pm2p5_hourly_difference
+
+      # Remove any unexpected non-finite values
+      X_train_full[!is.finite(X_train_full)] <- 0
+      X_test_full[!is.finite(X_test_full)] <- 0
+
+      # Test each value of k
+      for (j in seq_along(k_values)) {
+
+        value <- k_values[j]
+
+        set.seed(i * value)
+
+        # Sample training observations
+        train_indices <- seq_len(nrow(X_train_full))
+
+        if (length(train_indices) > 20000) {
+          train_indices <- sample(train_indices, 20000)
+        }
+
+        # Sample test observations
+        test_indices <- seq_len(nrow(X_test_full))
+
+        if (length(test_indices) > 5000) {
+          test_indices <- sample(test_indices, 5000)
+        }
+
+        X_train <- X_train_full[train_indices, , drop = FALSE]
+        Y_train <- Y_train_full[train_indices]
+
+        X_test <- X_test_full[test_indices, , drop = FALSE]
+        Y_test <- Y_test_full[test_indices]
+
+        # Fit KNN and calculate MSE
+        run_status <- tryCatch({
+
+          knn_fit <- FNN::knn.reg(
+            train = X_train,
+            test = X_test,
+            y = Y_train,
+            k = value
+          )
+
+          predictions <- knn_fit$pred
+
+          results_matrix[i - 1, j] <- mean(
+            (Y_test - predictions)^2
+          )
+
+          TRUE
+
+        }, error = function(e) {
+
+          cat(
+            "Error in Fold", i,
+            "for K =", value, ":",
+            e$message, "\n"
+          )
+
+          FALSE
+        })
+      }
+    }
+
+    # Calculate average CV MSE for each k
+    final_results_df <- tibble(
+      neighbors = k_values,
+      CV_MSE = colMeans(results_matrix, na.rm = TRUE)
+    )
+
+    print(final_results_df)
+
+It appears that 800 gives the lowest CV error (197.7277) of all the k
+values tested, so I will test a narrower range of k values surrounding
+800, from 750 to 850 going up by intervals of 10. For sake of space, I
+will not paste the same code below. However, the result was that 800
+still displayed the smallest CV error. Thus, I zoomed in further to
+compare k values form 795 to 805. When I did this, k=800 still yeildest
+the smallest 10 fold CV error.
+
+Conclusion: k nearest neighbors regression with k=800 outperforms
+standard OLS regression (CV error = 244.4548) with respect to predictive
+performance, with a CV error of 197.7277. Other values of k produce
+higher CV errors. The obvious downside of this approach is that no
+coefficients are produced (since it is nonparametric method), meaning no
+interpretation or inference can be performed.
+
+Nonlinear method 2: GAM with cubic smoothing splines:
+
+    library(mgcv)
+
+    set.seed(1)
+    fold_assignments<-numeric(nrow(grouped_time_series_cv_ready_data)) 
+    unique_sensors<-unique(grouped_time_series_cv_ready_data$sensor_index)
+
+    for(sensor in unique_sensors){
+      indices<-which(grouped_time_series_cv_ready_data$sensor_index == sensor)
+      num_sensor_rows<-length(indices)
+      sensor_folds<-cut(seq_len(num_sensor_rows), breaks=10, labels=FALSE)
+      fold_assignments[indices] <- sensor_folds}
+
+    test_MSE_values<-c()
+    for(i in 2:10){
+      training_indices<-which(fold_assignments < i)
+      test_indices<-which(fold_assignments == i)
+      training_data<-grouped_time_series_cv_ready_data[training_indices, ]
+      test_data<-grouped_time_series_cv_ready_data[test_indices, ]
+      
+       cat("Currently fitting fold:", i, "\n")
+      cat("Training observations:", nrow(training_data), "\n")
+
+      model_fit_gam<-bam(pm2p5_hourly_difference ~ Hour + s(humidity_hourly_difference)+ s(temperature_hourly_difference)+s(pressure_hourly_difference)+s(Wind_speed_hourly_difference)+s(Wind_direction_hourly_difference)+s(closest_source_distance)+s(second_closest_source_distance)+s(third_closest_source_distance)+s(fourth_closest_source_distance)+s(fifth_closest_source_distance)+s(closest_source_2025_pm2p5)+s(second_closest_source_2025_pm2p5)+s(third_closest_source_2025_pm2p5)+s(fourth_closest_source_2025_pm2p5)+s(fifth_closest_source_2025_pm2p5)+ti(temperature_hourly_difference, pressure_hourly_difference)+ti(temperature_hourly_difference, humidity_hourly_difference)+ti(pressure_hourly_difference, humidity_hourly_difference), data=training_data, method="fREML", discrete=FALSE) #bam is a simialr alternative to bam that is more efficient for very large datasets while maintaining the penalized roughness function structure of the gam fitted using the mgcv package
+      
+      test_MSE<-mean((test_data$pm2p5_hourly_difference-predict(model_fit_gam, test_data))^2)
+      
+      test_MSE_values<-c(test_MSE_values, test_MSE)}
+
+    GAM_CV_error<-mean(test_MSE_values)
+    GAM_CV_error
+
+The GAM fit using the bam() function (an alternative to the gam()
+function that improves computational efficiency on large datasets while
+maintaining the roughness penalty structure) exhibits an almost
+identical CV error (244.38) to standard OLS regression, which is
+significantly larger than KNN regression with k=800.
+
+Generating the final GAM model fit on the entire dataset:
+
+    final_GAM<-bam(pm2p5_hourly_difference ~ Hour + s(humidity_hourly_difference)+ s(temperature_hourly_difference)+s(pressure_hourly_difference)+s(Wind_speed_hourly_difference)+s(Wind_direction_hourly_difference)+s(closest_source_distance)+s(second_closest_source_distance)+s(third_closest_source_distance)+s(fourth_closest_source_distance)+s(fifth_closest_source_distance)+s(closest_source_2025_pm2p5)+s(second_closest_source_2025_pm2p5)+s(third_closest_source_2025_pm2p5)+s(fourth_closest_source_2025_pm2p5)+s(fifth_closest_source_2025_pm2p5) + ti(temperature_hourly_difference, pressure_hourly_difference)+ti(temperature_hourly_difference, humidity_hourly_difference)+ti(pressure_hourly_difference, humidity_hourly_difference), data=grouped_time_series_cv_ready_data, method="fREML", discrete=FALSE)
+
+    summary(final_GAM)
+
+The fitted relationships between the response and most of the predictors
+have a high level of nonlinear complexity (effective degrees of freedom
+greater than 5), with the exceptions of closest\_source\_2025\_pm2p5,
+second\_closest\_source\_2025\_pm2p5, and
+third\_closest\_source\_2025\_pm2p5, which have very linear fitted
+relationships (the smoothing splines for these three particular
+variables have very high roughness penalties, heavily restricting the
+integral of the square of the second derivative of the corresponding
+fitted spline).
+
+In addition to having almost no improvement in predictive performance
+compared to OLS regression, the GAM suffers from a similar problem to
+OLS regression when fit on the entire dataset: a very low adjusted R
+squared value. I revisit this later.
+
+Nonlinear Method 3: Investigating the predictive performance of local
+regression using normally distributed weight functions:
+
+    library(locfit)
+
+    grouped_time_series_cv_ready_data_local_regression<-grouped_time_series_cv_ready_data%>%
+    mutate(temp_humidity_interaction=temperature_hourly_difference*humidity_hourly_difference, temp_pressure_interaction=temperature_hourly_difference*pressure_hourly_difference, humidity_pressure_interaction=humidity_hourly_difference*pressure_hourly_difference)
+
+    set.seed(1)
+    fold_assignments<-numeric(nrow(grouped_time_series_cv_ready_data_local_regression)) 
+    unique_sensors<-unique(grouped_time_series_cv_ready_data_local_regression$sensor_index)
+
+    for(sensor in unique_sensors){
+      indices<-which(grouped_time_series_cv_ready_data_local_regression$sensor_index == sensor)
+      num_sensor_rows<-length(indices)
+      sensor_folds<-cut(seq_len(num_sensor_rows), breaks=10, labels=FALSE)
+      fold_assignments[indices] <- sensor_folds}
+
+    test_MSE_values<-c()
+    for(i in 2:10){
+      training_indices<-which(fold_assignments < i)
+      test_indices<-which(fold_assignments == i)
+      training_data<-grouped_time_series_cv_ready_data_local_regression[training_indices, ]
+      test_data<-grouped_time_series_cv_ready_data_local_regression[test_indices, ]
+      
+       cat("Currently fitting fold:", i, "\n")
+      cat("Training observations:", nrow(training_data), "\n")
+
+      local_regression_model<-locfit(pm2p5_hourly_difference ~ lp(Hour, humidity_hourly_difference, temperature_hourly_difference, pressure_hourly_difference, Wind_speed_hourly_difference, Wind_direction_hourly_difference, closest_source_distance, second_closest_source_distance, third_closest_source_distance, fourth_closest_source_distance, fifth_closest_source_distance, closest_source_2025_pm2p5, second_closest_source_2025_pm2p5, third_closest_source_2025_pm2p5, fourth_closest_source_2025_pm2p5, fifth_closest_source_2025_pm2p5,   temp_humidity_interaction, humidity_pressure_interaction, temp_pressure_interaction), data=training_data)
+      
+      test_MSE<-mean((test_data$pm2p5_hourly_difference-predict(local_regression_model, test_data))^2)
+      
+      test_MSE_values<-c(test_MSE_values, test_MSE)}
+
+    local_regression_CV_error<-mean(test_MSE_values)
+    local_regression_CV_error
+
+    colnames(grouped_time_series_cv_ready_data_local_regression)
+
+This script failed because the code for the local regression function
+does not support a 19 dimension predictor space.
