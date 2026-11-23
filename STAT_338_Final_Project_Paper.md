@@ -380,10 +380,7 @@ violations of homoscedasticity. The qqplot of the hourly aggregated OLS
 model (Fig 2) and the qqplot of the daily aggregated OLS model (Fig 4)
 suggest severe violations of residual normality at both tails.
 
-<img src="Fig1.png" alt="My Screenshot Caption" width="75%" />
-<p class="caption">
-My Screenshot Caption
-</p>
+<img src="Fig1.png" alt="" width="1618" style="display: block; margin: auto;" />
 
 Figure 1: a residual plot of the OLS model of pm2p5\_hourly\_difference
 regressed on all predictors (excluding Day) in addition to
@@ -391,11 +388,7 @@ humidity\_hourly\_difference:temperature\_hourly\_difference,
 temperature\_hourly\_difference:pressure\_hourly\_difference, and
 pressure\_hourly\_difference:humidity\_hourly\_difference.
 
-<img src="Fig2.png" alt="My Screenshot Caption" width="75%" />
-<p class="caption">
-My Screenshot Caption
-</p>
-
+<img src="Fig2.png" alt="" width="1614" style="display: block; margin: auto;" />
 Figure 2: A residual plot of the OLS model of pm2p5\_hourly\_difference
 regressed on all predictors (excluding Day and sensor\_index) in
 addition to
@@ -403,10 +396,7 @@ humidity\_hourly\_difference:temperature\_hourly\_difference,
 temperature\_hourly\_difference:pressure\_hourly\_difference, and
 pressure\_hourly\_difference:humidity\_hourly\_difference.
 
-<img src="Fig3.png" alt="My Screenshot Caption" width="75%" />
-<p class="caption">
-My Screenshot Caption
-</p>
+<img src="Fig3.png" alt="" width="1602" style="display: block; margin: auto;" />
 
 Figure 3: A residual plot of the OLS model of pm2p5\_daily\_difference
 regressed on all predictors (excluding sensor\_index) in addition to
@@ -414,10 +404,7 @@ humidity\_daily\_difference:temperature\_daily\_difference,
 temperature\_daily\_difference:pressure\_daily\_difference, and
 pressure\_daily\_difference:humidity\_daily\_difference.
 
-<img src="Fig4.png" alt="My Screenshot Caption" width="75%" />
-<p class="caption">
-My Screenshot Caption
-</p>
+<img src="Fig4.png" alt="" width="1610" style="display: block; margin: auto;" />
 
 Figure 4: A residual plot of the OLS model of pm2p5\_daily\_difference
 regressed on all predictors (excluding sensor\_index) in addition to
@@ -745,27 +732,16 @@ due to the tightly symmetric distributions. This is likely why the GAM
 and local regression models have such low fitting performance on the
 entire dataset.
 
-<img src="Fig5.png" alt="My Screenshot Caption" width="75%" />
-<p class="caption">
-My Screenshot Caption
-</p>
-
+<img src="Fig5.png" alt="" width="1644" style="display: block; margin: auto;" />
 Fig 5: a plot of the smoothing spline fit for pm2p5\_hourly\_difference
 on humidity\_hourly\_difference.
 
-<img src="Fig6.png" alt="My Screenshot Caption" width="75%" />
-<p class="caption">
-My Screenshot Caption
-</p>
+<img src="Fig6.png" alt="" width="1702" style="display: block; margin: auto;" />
 
 Fig 6: a plot of the smoothing spline fit for pm2p5\_hourly\_difference
 on temperature\_hourly\_difference.
 
-<img src="Fig7.png" alt="My Screenshot Caption" width="75%" />
-<p class="caption">
-My Screenshot Caption
-</p>
-
+<img src="Fig7.png" alt="" width="1612" style="display: block; margin: auto;" />
 Fig 6: a plot of the smoothing spline fit for pm2p5\_hourly\_difference
 on temperature\_hourly\_difference.
 
