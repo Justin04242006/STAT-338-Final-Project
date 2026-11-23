@@ -465,12 +465,16 @@ neither used for training or validation.
 The train/test split for each iteration of 10 fold grouped time series
 cross validation looks like this:
 
-Train Test ——————————————— Train Train Test —————————————- Train Train
-Train Test ———————————- Train Train Train Train Test —————————- Train
-Train Train Train Train Test ———————- Train Train Train Train Train
-Train Test —————- Train Train Train Train Train Train Train Test ———-
-Train Train Train Train Train Train Train Train Test —- Train Train
-Train Train Train Train Train Train Train Test
+
+    Train Test  ---------------------------------------------
+    Train Train Test ----------------------------------------
+    Train Train Train Test ----------------------------------
+    Train Train Train Train Test ----------------------------
+    Train Train Train Train Train Test ----------------------
+    Train Train Train Train Train Train Test ----------------
+    Train Train Train Train Train Train Train Test ----------
+    Train Train Train Train Train Train Train Train Test ----
+    Train Train Train Train Train Train Train Train Train Test
 
 For KNN regression, the entire dataset was split into a portion
 containing 90% of the rows and a portion containing 10% of the rows. The
@@ -508,79 +512,76 @@ aggregated dataset yielded the following model summary:
 
 ------------------------------------------------------------------------
 
-Family: gaussian Link function: identity
+    Family: gaussian 
+    Link function: identity 
 
-Formula: pm2p5\_hourly\_difference ~ Hour +
-lo(humidity\_hourly\_difference) + lo(temperature\_hourly\_difference) +
-lo(pressure\_hourly\_difference) + lo(Wind\_speed\_hourly\_difference) +
-lo(Wind\_direction\_hourly\_difference) +
-lo(closest\_source\_distance) + lo(second\_closest\_source\_distance) +
-lo(third\_closest\_source\_distance) +
-lo(fourth\_closest\_source\_distance) +
-lo(fifth\_closest\_source\_distance) +
-lo(closest\_source\_2025\_pm2p5) +
-lo(second\_closest\_source\_2025\_pm2p5) +
-lo(third\_closest\_source\_2025\_pm2p5) +
-lo(fourth\_closest\_source\_2025\_pm2p5) +
-lo(fifth\_closest\_source\_2025\_pm2p5) +
-temperature\_hourly\_difference \* humidity\_hourly\_difference +
-temperature\_hourly\_difference \* pressure\_hourly\_difference +
-pressure\_hourly\_difference \* humidity\_hourly\_difference
+    Formula:
+    pm2p5_hourly_difference ~ Hour + lo(humidity_hourly_difference) + 
+        lo(temperature_hourly_difference) + lo(pressure_hourly_difference) + 
+        lo(Wind_speed_hourly_difference) + lo(Wind_direction_hourly_difference) + 
+        lo(closest_source_distance) + lo(second_closest_source_distance) + 
+        lo(third_closest_source_distance) + lo(fourth_closest_source_distance) + 
+        lo(fifth_closest_source_distance) + lo(closest_source_2025_pm2p5) + 
+        lo(second_closest_source_2025_pm2p5) + lo(third_closest_source_2025_pm2p5) + 
+        lo(fourth_closest_source_2025_pm2p5) + lo(fifth_closest_source_2025_pm2p5) + 
+        temperature_hourly_difference * humidity_hourly_difference + 
+        temperature_hourly_difference * pressure_hourly_difference + 
+        pressure_hourly_difference * humidity_hourly_difference
 
-Parametric coefficients: Estimate Std. Error t value Pr(&gt;|t|)  
-(Intercept) 1.0704490 0.2383813 4.490 7.11e-06 ***Hour01 -0.2828628
-0.1443977 -1.959 0.050123 .  
-Hour02 -0.3052217 0.1450283 -2.105 0.035329*   
-Hour03 -0.2519839 0.1451595 -1.736 0.082580 .  
-Hour04 -0.6130670 0.1452554 -4.221 2.44e-05** *Hour05 -0.7925194
-0.1449958 -5.466 4.61e-08* **Hour06 -0.5171554 0.1447999 -3.572
-0.000355** *Hour07 -0.4911183 0.1447194 -3.394 0.000690* **Hour08
--0.3096803 0.1447124 -2.140 0.032357 \*  
-Hour09 -0.2321452 0.1446382 -1.605 0.108493  
-Hour10 -0.0525219 0.1450412 -0.362 0.717265  
-Hour11 -0.0959893 0.1454297 -0.660 0.509229  
-Hour12 0.1517209 0.1465821 1.035 0.300642  
-Hour13 0.0110580 0.1487856 0.074 0.940754  
-Hour14 -0.4621722 0.1502018 -3.077 0.002091** Hour15 -0.8846820
-0.1502154 -5.889 3.88e-09 ***Hour16 -0.6708159 0.1496383 -4.483
-7.36e-06*** Hour17 -0.6122593 0.1487966 -4.115 3.88e-05 ***Hour18
--0.6012963 0.1473544 -4.081 4.49e-05*** Hour19 -0.4164182 0.1469876
--2.833 0.004611 \*\* Hour20 -0.3726748 0.1462380 -2.548 0.010822 \*  
-Hour21 -0.3651846 0.1453991 -2.512 0.012019 \*  
-Hour22 -0.1052046 0.1447974 -0.727 0.467493  
-Hour23 0.1331207 0.1442846 0.923 0.356203  
-lo(humidity\_hourly\_difference) 0.1215224 0.0034082 35.656 &lt; 2e-16
-***lo(temperature\_hourly\_difference) -0.1224751 0.0070025 -17.490 &lt;
-2e-16*** lo(pressure\_hourly\_difference) 0.1398223 0.0148724 9.401 &lt;
-2e-16 ***lo(Wind\_speed\_hourly\_difference) 0.0209804 0.0073162 2.868
-0.004135** lo(Wind\_direction\_hourly\_difference) -0.0011098 0.0005760
--1.927 0.054019 .  
-lo(closest\_source\_distance) 0.2594457 0.0450282 5.762 8.32e-09*
-**lo(second\_closest\_source\_distance) -0.2382245 0.0406196 -5.865
-4.50e-09** *lo(third\_closest\_source\_distance) -0.0687306 0.0396854
--1.732 0.083294 .  
-lo(fourth\_closest\_source\_distance) 0.2251984 0.0490919 4.587
-4.49e-06* **lo(fifth\_closest\_source\_distance) -0.1592675 0.0433760
--3.672 0.000241** *lo(closest\_source\_2025\_pm2p5) -0.0073730 0.0039178
--1.882 0.059849 .  
-lo(second\_closest\_source\_2025\_pm2p5) -0.0144721 0.0032025 -4.519
-6.21e-06* **lo(third\_closest\_source\_2025\_pm2p5) -0.0099537 0.0032576
--3.056 0.002247** lo(fourth\_closest\_source\_2025\_pm2p5) -0.0161162
-0.0041243 -3.908 9.32e-05 ***lo(fifth\_closest\_source\_2025\_pm2p5)
--0.0129279 0.0035071 -3.686 0.000228*** temperature\_hourly\_difference
--0.1224751 0.0070025 -17.490 &lt; 2e-16 ***humidity\_hourly\_difference
-0.1215224 0.0034082 35.656 &lt; 2e-16*** pressure\_hourly\_difference
-0.1398223 0.0148724 9.401 &lt; 2e-16
-***temperature\_hourly\_difference:humidity\_hourly\_difference
-0.0089820 0.0007479 12.009 &lt; 2e-16***
-temperature\_hourly\_difference:pressure\_hourly\_difference -0.0183876
-0.0087813 -2.094 0.036265 \*  
-humidity\_hourly\_difference:pressure\_hourly\_difference -0.0339341
-0.0057706 -5.880 4.09e-09 ***— Signif. codes: 0 ‘***’ 0.001 ‘\*\*’ 0.01
-‘\*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+    Parametric coefficients:
+                                                               Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)                                               1.0704490  0.2383813   4.490 7.11e-06 ***
+    Hour01                                                   -0.2828628  0.1443977  -1.959 0.050123 .  
+    Hour02                                                   -0.3052217  0.1450283  -2.105 0.035329 *  
+    Hour03                                                   -0.2519839  0.1451595  -1.736 0.082580 .  
+    Hour04                                                   -0.6130670  0.1452554  -4.221 2.44e-05 ***
+    Hour05                                                   -0.7925194  0.1449958  -5.466 4.61e-08 ***
+    Hour06                                                   -0.5171554  0.1447999  -3.572 0.000355 ***
+    Hour07                                                   -0.4911183  0.1447194  -3.394 0.000690 ***
+    Hour08                                                   -0.3096803  0.1447124  -2.140 0.032357 *  
+    Hour09                                                   -0.2321452  0.1446382  -1.605 0.108493    
+    Hour10                                                   -0.0525219  0.1450412  -0.362 0.717265    
+    Hour11                                                   -0.0959893  0.1454297  -0.660 0.509229    
+    Hour12                                                    0.1517209  0.1465821   1.035 0.300642    
+    Hour13                                                    0.0110580  0.1487856   0.074 0.940754    
+    Hour14                                                   -0.4621722  0.1502018  -3.077 0.002091 ** 
+    Hour15                                                   -0.8846820  0.1502154  -5.889 3.88e-09 ***
+    Hour16                                                   -0.6708159  0.1496383  -4.483 7.36e-06 ***
+    Hour17                                                   -0.6122593  0.1487966  -4.115 3.88e-05 ***
+    Hour18                                                   -0.6012963  0.1473544  -4.081 4.49e-05 ***
+    Hour19                                                   -0.4164182  0.1469876  -2.833 0.004611 ** 
+    Hour20                                                   -0.3726748  0.1462380  -2.548 0.010822 *  
+    Hour21                                                   -0.3651846  0.1453991  -2.512 0.012019 *  
+    Hour22                                                   -0.1052046  0.1447974  -0.727 0.467493    
+    Hour23                                                    0.1331207  0.1442846   0.923 0.356203    
+    lo(humidity_hourly_difference)                            0.1215224  0.0034082  35.656  < 2e-16 ***
+    lo(temperature_hourly_difference)                        -0.1224751  0.0070025 -17.490  < 2e-16 ***
+    lo(pressure_hourly_difference)                            0.1398223  0.0148724   9.401  < 2e-16 ***
+    lo(Wind_speed_hourly_difference)                          0.0209804  0.0073162   2.868 0.004135 ** 
+    lo(Wind_direction_hourly_difference)                     -0.0011098  0.0005760  -1.927 0.054019 .  
+    lo(closest_source_distance)                               0.2594457  0.0450282   5.762 8.32e-09 ***
+    lo(second_closest_source_distance)                       -0.2382245  0.0406196  -5.865 4.50e-09 ***
+    lo(third_closest_source_distance)                        -0.0687306  0.0396854  -1.732 0.083294 .  
+    lo(fourth_closest_source_distance)                        0.2251984  0.0490919   4.587 4.49e-06 ***
+    lo(fifth_closest_source_distance)                        -0.1592675  0.0433760  -3.672 0.000241 ***
+    lo(closest_source_2025_pm2p5)                            -0.0073730  0.0039178  -1.882 0.059849 .  
+    lo(second_closest_source_2025_pm2p5)                     -0.0144721  0.0032025  -4.519 6.21e-06 ***
+    lo(third_closest_source_2025_pm2p5)                      -0.0099537  0.0032576  -3.056 0.002247 ** 
+    lo(fourth_closest_source_2025_pm2p5)                     -0.0161162  0.0041243  -3.908 9.32e-05 ***
+    lo(fifth_closest_source_2025_pm2p5)                      -0.0129279  0.0035071  -3.686 0.000228 ***
+    temperature_hourly_difference                            -0.1224751  0.0070025 -17.490  < 2e-16 ***
+    humidity_hourly_difference                                0.1215224  0.0034082  35.656  < 2e-16 ***
+    pressure_hourly_difference                                0.1398223  0.0148724   9.401  < 2e-16 ***
+    temperature_hourly_difference:humidity_hourly_difference  0.0089820  0.0007479  12.009  < 2e-16 ***
+    temperature_hourly_difference:pressure_hourly_difference -0.0183876  0.0087813  -2.094 0.036265 *  
+    humidity_hourly_difference:pressure_hourly_difference    -0.0339341  0.0057706  -5.880 4.09e-09 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Rank: 42/45 R-sq.(adj) = 0.0098 Deviance explained = 0.987% GCV = 268.67
-Scale est. = 268.66 n = 611897
+
+    Rank: 42/45
+    R-sq.(adj) =  0.0098   Deviance explained = 0.987%
+    GCV = 268.67  Scale est. = 268.66    n = 611897
 
 ------------------------------------------------------------------------
 
@@ -603,76 +604,77 @@ model summary:
 
 ------------------------------------------------------------------------
 
-Family: gaussian Link function: identity
 
-Formula: pm2p5\_hourly\_difference ~ Hour +
-s(humidity\_hourly\_difference) + s(temperature\_hourly\_difference) +
-s(pressure\_hourly\_difference) + s(Wind\_speed\_hourly\_difference) +
-s(Wind\_direction\_hourly\_difference) + s(closest\_source\_distance) +
-s(second\_closest\_source\_distance) +
-s(third\_closest\_source\_distance) +
-s(fourth\_closest\_source\_distance) +
-s(fifth\_closest\_source\_distance) + s(closest\_source\_2025\_pm2p5) +
-s(second\_closest\_source\_2025\_pm2p5) +
-s(third\_closest\_source\_2025\_pm2p5) +
-s(fourth\_closest\_source\_2025\_pm2p5) +
-s(fifth\_closest\_source\_2025\_pm2p5) +
-temperature\_hourly\_difference:pressure\_hourly\_difference +
-temperature\_hourly\_difference:humidity\_hourly\_difference +
-pressure\_hourly\_difference:humidity\_hourly\_difference
+    Family: gaussian 
+    Link function: identity 
 
-Parametric coefficients: Estimate Std. Error t value Pr(&gt;|t|)  
-(Intercept) 0.282812 0.105290 2.686 0.007231 \*\* Hour01 -0.273903
-0.144422 -1.897 0.057888 .  
-Hour02 -0.300047 0.145338 -2.064 0.038973 \*  
-Hour03 -0.176475 0.145486 -1.213 0.225129  
-Hour04 -0.527149 0.145774 -3.616 0.000299 ***Hour05 -0.706399 0.145723
--4.848 1.25e-06*** Hour06 -0.421219 0.145701 -2.891 0.003841 \*\* Hour07
--0.371743 0.145602 -2.553 0.010676 \*  
-Hour08 -0.200108 0.145497 -1.375 0.169026  
-Hour09 -0.128050 0.145329 -0.881 0.378262  
-Hour10 0.050357 0.145782 0.345 0.729775  
-Hour11 0.048202 0.146443 0.329 0.742041  
-Hour12 0.364179 0.147817 2.464 0.013751 \*  
-Hour13 0.295458 0.150106 1.968 0.049031 \*  
-Hour14 -0.162207 0.151754 -1.069 0.285126  
-Hour15 -0.538893 0.151816 -3.550 0.000386 ***Hour16 -0.318671 0.151507
--2.103 0.035436*   
-Hour17 -0.269494 0.150878 -1.786 0.074072 .  
-Hour18 -0.290807 0.149454 -1.946 0.051680 .  
-Hour19 -0.116658 0.148539 -0.785 0.432238  
-Hour20 -0.136182 0.147439 -0.924 0.355670  
-Hour21 -0.146652 0.146064 -1.004 0.315366  
-Hour22 0.004449 0.145061 0.031 0.975531  
-Hour23 0.162166 0.144337 1.124 0.261216  
-temperature\_hourly\_difference:pressure\_hourly\_difference -0.125641
-0.017036 -7.375 1.65e-13**
-*temperature\_hourly\_difference:humidity\_hourly\_difference 0.026973
-0.002394 11.269 &lt; 2e-16*
-**pressure\_hourly\_difference:humidity\_hourly\_difference -0.042097
-0.006987 -6.025 1.69e-09** *— Signif. codes: 0 ‘***’ 0.001 ‘**’ 0.01
-‘\*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+    Formula:
+    pm2p5_hourly_difference ~ Hour + s(humidity_hourly_difference) + 
+        s(temperature_hourly_difference) + s(pressure_hourly_difference) + 
+        s(Wind_speed_hourly_difference) + s(Wind_direction_hourly_difference) + 
+        s(closest_source_distance) + s(second_closest_source_distance) + 
+        s(third_closest_source_distance) + s(fourth_closest_source_distance) + 
+        s(fifth_closest_source_distance) + s(closest_source_2025_pm2p5) + 
+        s(second_closest_source_2025_pm2p5) + s(third_closest_source_2025_pm2p5) + 
+        s(fourth_closest_source_2025_pm2p5) + s(fifth_closest_source_2025_pm2p5) + 
+        temperature_hourly_difference:pressure_hourly_difference + 
+        temperature_hourly_difference:humidity_hourly_difference + 
+        pressure_hourly_difference:humidity_hourly_difference
 
-Approximate significance of smooth terms: edf Ref.df F p-value  
-s(humidity\_hourly\_difference) 8.025 8.713 190.208 &lt; 2e-16
-***s(temperature\_hourly\_difference) 7.966 8.636 49.132 &lt; 2e-16***
-s(pressure\_hourly\_difference) 6.610 7.803 22.498 &lt; 2e-16
-***s(Wind\_speed\_hourly\_difference) 5.726 6.813 4.651 2.72e-05***
-s(Wind\_direction\_hourly\_difference) 5.476 6.550 5.884 2.23e-06
-***s(closest\_source\_distance) 7.495 8.193 5.689 &lt; 2e-16***
-s(second\_closest\_source\_distance) 8.405 8.753 17.048 &lt; 2e-16
-***s(third\_closest\_source\_distance) 8.409 8.691 10.272 &lt; 2e-16***
-s(fourth\_closest\_source\_distance) 4.531 5.312 1.232 0.26529  
-s(fifth\_closest\_source\_distance) 5.828 6.726 6.982 &lt; 2e-16
-***s(closest\_source\_2025\_pm2p5) 1.000 1.001 0.425 0.51482  
-s(second\_closest\_source\_2025\_pm2p5) 1.026 1.045 0.128 0.76941  
-s(third\_closest\_source\_2025\_pm2p5) 1.002 1.003 9.157 0.00247**
-s(fourth\_closest\_source\_2025\_pm2p5) 7.944 8.397 12.184 &lt; 2e-16*
-**s(fifth\_closest\_source\_2025\_pm2p5) 8.619 8.854 18.604 &lt; 2e-16**
-*— Signif. codes: 0 ‘***’ 0.001 ‘**’ 0.01 ‘\*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+    Parametric coefficients:
+                                                              Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)                                               0.282812   0.105290   2.686 0.007231 ** 
+    Hour01                                                   -0.273903   0.144422  -1.897 0.057888 .  
+    Hour02                                                   -0.300047   0.145338  -2.064 0.038973 *  
+    Hour03                                                   -0.176475   0.145486  -1.213 0.225129    
+    Hour04                                                   -0.527149   0.145774  -3.616 0.000299 ***
+    Hour05                                                   -0.706399   0.145723  -4.848 1.25e-06 ***
+    Hour06                                                   -0.421219   0.145701  -2.891 0.003841 ** 
+    Hour07                                                   -0.371743   0.145602  -2.553 0.010676 *  
+    Hour08                                                   -0.200108   0.145497  -1.375 0.169026    
+    Hour09                                                   -0.128050   0.145329  -0.881 0.378262    
+    Hour10                                                    0.050357   0.145782   0.345 0.729775    
+    Hour11                                                    0.048202   0.146443   0.329 0.742041    
+    Hour12                                                    0.364179   0.147817   2.464 0.013751 *  
+    Hour13                                                    0.295458   0.150106   1.968 0.049031 *  
+    Hour14                                                   -0.162207   0.151754  -1.069 0.285126    
+    Hour15                                                   -0.538893   0.151816  -3.550 0.000386 ***
+    Hour16                                                   -0.318671   0.151507  -2.103 0.035436 *  
+    Hour17                                                   -0.269494   0.150878  -1.786 0.074072 .  
+    Hour18                                                   -0.290807   0.149454  -1.946 0.051680 .  
+    Hour19                                                   -0.116658   0.148539  -0.785 0.432238    
+    Hour20                                                   -0.136182   0.147439  -0.924 0.355670    
+    Hour21                                                   -0.146652   0.146064  -1.004 0.315366    
+    Hour22                                                    0.004449   0.145061   0.031 0.975531    
+    Hour23                                                    0.162166   0.144337   1.124 0.261216    
+    temperature_hourly_difference:pressure_hourly_difference -0.125641   0.017036  -7.375 1.65e-13 ***
+    temperature_hourly_difference:humidity_hourly_difference  0.026973   0.002394  11.269  < 2e-16 ***
+    pressure_hourly_difference:humidity_hourly_difference    -0.042097   0.006987  -6.025 1.69e-09 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-R-sq.(adj) = 0.012 Deviance explained = 1.22% fREML = 2.5791e+06 Scale
-est. = 268.05 n = 611897
+    Approximate significance of smooth terms:
+                                          edf Ref.df       F  p-value    
+    s(humidity_hourly_difference)       8.025  8.713 190.208  < 2e-16 ***
+    s(temperature_hourly_difference)    7.966  8.636  49.132  < 2e-16 ***
+    s(pressure_hourly_difference)       6.610  7.803  22.498  < 2e-16 ***
+    s(Wind_speed_hourly_difference)     5.726  6.813   4.651 2.72e-05 ***
+    s(Wind_direction_hourly_difference) 5.476  6.550   5.884 2.23e-06 ***
+    s(closest_source_distance)          7.495  8.193   5.689  < 2e-16 ***
+    s(second_closest_source_distance)   8.405  8.753  17.048  < 2e-16 ***
+    s(third_closest_source_distance)    8.409  8.691  10.272  < 2e-16 ***
+    s(fourth_closest_source_distance)   4.531  5.312   1.232  0.26529    
+    s(fifth_closest_source_distance)    5.828  6.726   6.982  < 2e-16 ***
+    s(closest_source_2025_pm2p5)        1.000  1.001   0.425  0.51482    
+    s(second_closest_source_2025_pm2p5) 1.026  1.045   0.128  0.76941    
+    s(third_closest_source_2025_pm2p5)  1.002  1.003   9.157  0.00247 ** 
+    s(fourth_closest_source_2025_pm2p5) 7.944  8.397  12.184  < 2e-16 ***
+    s(fifth_closest_source_2025_pm2p5)  8.619  8.854  18.604  < 2e-16 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    R-sq.(adj) =  0.012   Deviance explained = 1.22%
+    fREML = 2.5791e+06  Scale est. = 268.05    n = 611897
 
 ------------------------------------------------------------------------
 
@@ -771,59 +773,49 @@ gave this model summary:
 
 ------------------------------------------------------------------------
 
-Family: gaussian Link function: identity
 
-Formula: pm2p5\_daily\_difference ~ lo(humidity\_daily\_difference) +
-lo(temperature\_daily\_difference) + lo(pressure\_daily\_difference) +
-lo(Wind\_speed\_daily\_difference) +
-lo(Wind\_direction\_daily\_difference) + lo(closest\_source\_distance) +
-lo(second\_closest\_source\_distance) +
-lo(third\_closest\_source\_distance) +
-lo(fourth\_closest\_source\_distance) +
-lo(fifth\_closest\_source\_distance) +
-lo(closest\_source\_2025\_pm2p5) +
-lo(second\_closest\_source\_2025\_pm2p5) +
-lo(third\_closest\_source\_2025\_pm2p5) +
-lo(fourth\_closest\_source\_2025\_pm2p5) +
-lo(fifth\_closest\_source\_2025\_pm2p5) +
-temperature\_daily\_difference:humidity\_daily\_difference +
-temperature\_daily\_difference:pressure\_daily\_difference +
-pressure\_daily\_difference:humidity\_daily\_difference
+    Family: gaussian 
+    Link function: identity 
 
-Parametric coefficients: Estimate Std. Error t value Pr(&gt;|t|)  
-(Intercept) 0.194999 1.809037 0.108 0.914162  
-lo(humidity\_daily\_difference) 0.107207 0.015790 6.790 1.15e-11
-***lo(temperature\_daily\_difference) -0.449874 0.037089 -12.130 &lt;
-2e-16*** lo(pressure\_daily\_difference) 0.094637 0.035732 2.649
-0.008089 \*\* lo(Wind\_speed\_daily\_difference) -0.227655 0.045546
--4.998 5.82e-07 ***lo(Wind\_direction\_daily\_difference) -0.004922
-0.002309 -2.131 0.033077*   
-lo(closest\_source\_distance) 0.120475 0.378394 0.318 0.750196  
-lo(second\_closest\_source\_distance) -0.133388 0.340821 -0.391
-0.695526  
-lo(third\_closest\_source\_distance) 0.135876 0.339506 0.400 0.689000  
-lo(fourth\_closest\_source\_distance) 0.011060 0.408019 0.027 0.978375  
-lo(fifth\_closest\_source\_distance) -0.094489 0.350503 -0.270
-0.787484  
-lo(closest\_source\_2025\_pm2p5) 0.006109 0.033344 0.183 0.854631  
-lo(second\_closest\_source\_2025\_pm2p5) 0.007213 0.027026 0.267
-0.789554  
-lo(third\_closest\_source\_2025\_pm2p5) -0.004301 0.027417 -0.157
-0.875337  
-lo(fourth\_closest\_source\_2025\_pm2p5) 0.003815 0.034698 0.110
-0.912451  
-lo(fifth\_closest\_source\_2025\_pm2p5) -0.007374 0.029703 -0.248
-0.803935  
-temperature\_daily\_difference:humidity\_daily\_difference 0.008059
-0.002209 3.647 0.000266**
-*temperature\_daily\_difference:pressure\_daily\_difference 0.018542
-0.004244 4.370 1.25e-05*
-**humidity\_daily\_difference:pressure\_daily\_difference -0.002956
-0.002302 -1.284 0.199159  
-— Signif. codes: 0 ‘**\*’ 0.001 ‘\*\*’ 0.01 ‘\*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+    Formula:
+    pm2p5_daily_difference ~ lo(humidity_daily_difference) + lo(temperature_daily_difference) + 
+        lo(pressure_daily_difference) + lo(Wind_speed_daily_difference) + 
+        lo(Wind_direction_daily_difference) + lo(closest_source_distance) + 
+        lo(second_closest_source_distance) + lo(third_closest_source_distance) + 
+        lo(fourth_closest_source_distance) + lo(fifth_closest_source_distance) + 
+        lo(closest_source_2025_pm2p5) + lo(second_closest_source_2025_pm2p5) + 
+        lo(third_closest_source_2025_pm2p5) + lo(fourth_closest_source_2025_pm2p5) + 
+        lo(fifth_closest_source_2025_pm2p5) + temperature_daily_difference:humidity_daily_difference + 
+        temperature_daily_difference:pressure_daily_difference + 
+        pressure_daily_difference:humidity_daily_difference
 
-R-sq.(adj) = 0.0136 Deviance explained = 1.43% -REML = 1.2146e+05 Scale
-est. = 810.53 n = 25467
+    Parametric coefficients:
+                                                            Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)                                             0.194999   1.809037   0.108 0.914162    
+    lo(humidity_daily_difference)                           0.107207   0.015790   6.790 1.15e-11 ***
+    lo(temperature_daily_difference)                       -0.449874   0.037089 -12.130  < 2e-16 ***
+    lo(pressure_daily_difference)                           0.094637   0.035732   2.649 0.008089 ** 
+    lo(Wind_speed_daily_difference)                        -0.227655   0.045546  -4.998 5.82e-07 ***
+    lo(Wind_direction_daily_difference)                    -0.004922   0.002309  -2.131 0.033077 *  
+    lo(closest_source_distance)                             0.120475   0.378394   0.318 0.750196    
+    lo(second_closest_source_distance)                     -0.133388   0.340821  -0.391 0.695526    
+    lo(third_closest_source_distance)                       0.135876   0.339506   0.400 0.689000    
+    lo(fourth_closest_source_distance)                      0.011060   0.408019   0.027 0.978375    
+    lo(fifth_closest_source_distance)                      -0.094489   0.350503  -0.270 0.787484    
+    lo(closest_source_2025_pm2p5)                           0.006109   0.033344   0.183 0.854631    
+    lo(second_closest_source_2025_pm2p5)                    0.007213   0.027026   0.267 0.789554    
+    lo(third_closest_source_2025_pm2p5)                    -0.004301   0.027417  -0.157 0.875337    
+    lo(fourth_closest_source_2025_pm2p5)                    0.003815   0.034698   0.110 0.912451    
+    lo(fifth_closest_source_2025_pm2p5)                    -0.007374   0.029703  -0.248 0.803935    
+    temperature_daily_difference:humidity_daily_difference  0.008059   0.002209   3.647 0.000266 ***
+    temperature_daily_difference:pressure_daily_difference  0.018542   0.004244   4.370 1.25e-05 ***
+    humidity_daily_difference:pressure_daily_difference    -0.002956   0.002302  -1.284 0.199159    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+    R-sq.(adj) =  0.0136   Deviance explained = 1.43%
+    -REML = 1.2146e+05  Scale est. = 810.53    n = 25467
 
 ------------------------------------------------------------------------
 
@@ -850,53 +842,52 @@ entire daily aggregated dataset:
 
 ------------------------------------------------------------------------
 
-Family: gaussian Link function: identity
 
-Formula: pm2p5\_daily\_difference ~ s(humidity\_daily\_difference) +
-s(temperature\_daily\_difference) + s(pressure\_daily\_difference) +
-s(Wind\_speed\_daily\_difference) +
-s(Wind\_direction\_daily\_difference) + s(closest\_source\_distance) +
-s(second\_closest\_source\_distance) +
-s(third\_closest\_source\_distance) +
-s(fourth\_closest\_source\_distance) +
-s(fifth\_closest\_source\_distance) + s(closest\_source\_2025\_pm2p5) +
-s(second\_closest\_source\_2025\_pm2p5) +
-s(third\_closest\_source\_2025\_pm2p5) +
-s(fourth\_closest\_source\_2025\_pm2p5) +
-s(fifth\_closest\_source\_2025\_pm2p5) +
-ti(temperature\_daily\_difference, pressure\_daily\_difference) +
-ti(temperature\_daily\_difference, humidity\_daily\_difference) +
-ti(pressure\_daily\_difference, humidity\_daily\_difference)
+    Family: gaussian 
+    Link function: identity 
 
-Parametric coefficients: Estimate Std. Error t value Pr(&gt;|t|)
-(Intercept) -0.04891 0.24052 -0.203 0.839
+    Formula:
+    pm2p5_daily_difference ~ s(humidity_daily_difference) + s(temperature_daily_difference) + 
+        s(pressure_daily_difference) + s(Wind_speed_daily_difference) + 
+        s(Wind_direction_daily_difference) + s(closest_source_distance) + 
+        s(second_closest_source_distance) + s(third_closest_source_distance) + 
+        s(fourth_closest_source_distance) + s(fifth_closest_source_distance) + 
+        s(closest_source_2025_pm2p5) + s(second_closest_source_2025_pm2p5) + 
+        s(third_closest_source_2025_pm2p5) + s(fourth_closest_source_2025_pm2p5) + 
+        s(fifth_closest_source_2025_pm2p5) + ti(temperature_daily_difference, 
+        pressure_daily_difference) + ti(temperature_daily_difference, 
+        humidity_daily_difference) + ti(pressure_daily_difference, 
+        humidity_daily_difference)
 
-Approximate significance of smooth terms: edf Ref.df F p-value  
-s(humidity\_daily\_difference) 8.401 8.889 6.900 &lt; 2e-16
-***s(temperature\_daily\_difference) 8.402 8.870 14.627 &lt; 2e-16***
-s(pressure\_daily\_difference) 7.461 8.412 5.788 &lt; 2e-16
-***s(Wind\_speed\_daily\_difference) 7.531 8.447 9.746 &lt; 2e-16***
-s(Wind\_direction\_daily\_difference) 7.812 8.613 3.391 0.000317
-***s(closest\_source\_distance) 1.000 1.000 0.129 0.719938  
-s(second\_closest\_source\_distance) 1.000 1.000 0.219 0.640040  
-s(third\_closest\_source\_distance) 1.000 1.000 0.087 0.768456  
-s(fourth\_closest\_source\_distance) 1.000 1.000 0.239 0.625027  
-s(fifth\_closest\_source\_distance) 1.000 1.000 0.622 0.430231  
-s(closest\_source\_2025\_pm2p5) 1.002 1.005 0.000 0.999491  
-s(second\_closest\_source\_2025\_pm2p5) 1.000 1.000 0.027 0.868662  
-s(third\_closest\_source\_2025\_pm2p5) 1.000 1.000 0.090 0.764551  
-s(fourth\_closest\_source\_2025\_pm2p5) 1.002 1.004 0.002 0.982975  
-s(fifth\_closest\_source\_2025\_pm2p5) 1.000 1.000 0.137 0.711786  
-ti(temperature\_daily\_difference,pressure\_daily\_difference) 6.238
-7.755 7.301 &lt; 2e-16***
-ti(temperature\_daily\_difference,humidity\_daily\_difference) 15.150
-15.799 6.103 &lt; 2e-16
-***ti(pressure\_daily\_difference,humidity\_daily\_difference) 3.408
-4.710 1.264 0.315184  
-— Signif. codes: 0 ‘***’ 0.001 ‘\*\*’ 0.01 ‘\*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+    Parametric coefficients:
+                Estimate Std. Error t value Pr(>|t|)
+    (Intercept) -0.04891    0.24052  -0.203    0.839
 
-R-sq.(adj) = 0.0274 Deviance explained = 3.02% GCV = 801.59 Scale est. =
-799.21 n = 25467
+    Approximate significance of smooth terms:
+                                                                  edf Ref.df      F  p-value    
+    s(humidity_daily_difference)                                8.401  8.889  6.900  < 2e-16 ***
+    s(temperature_daily_difference)                             8.402  8.870 14.627  < 2e-16 ***
+    s(pressure_daily_difference)                                7.461  8.412  5.788  < 2e-16 ***
+    s(Wind_speed_daily_difference)                              7.531  8.447  9.746  < 2e-16 ***
+    s(Wind_direction_daily_difference)                          7.812  8.613  3.391 0.000317 ***
+    s(closest_source_distance)                                  1.000  1.000  0.129 0.719938    
+    s(second_closest_source_distance)                           1.000  1.000  0.219 0.640040    
+    s(third_closest_source_distance)                            1.000  1.000  0.087 0.768456    
+    s(fourth_closest_source_distance)                           1.000  1.000  0.239 0.625027    
+    s(fifth_closest_source_distance)                            1.000  1.000  0.622 0.430231    
+    s(closest_source_2025_pm2p5)                                1.002  1.005  0.000 0.999491    
+    s(second_closest_source_2025_pm2p5)                         1.000  1.000  0.027 0.868662    
+    s(third_closest_source_2025_pm2p5)                          1.000  1.000  0.090 0.764551    
+    s(fourth_closest_source_2025_pm2p5)                         1.002  1.004  0.002 0.982975    
+    s(fifth_closest_source_2025_pm2p5)                          1.000  1.000  0.137 0.711786    
+    ti(temperature_daily_difference,pressure_daily_difference)  6.238  7.755  7.301  < 2e-16 ***
+    ti(temperature_daily_difference,humidity_daily_difference) 15.150 15.799  6.103  < 2e-16 ***
+    ti(pressure_daily_difference,humidity_daily_difference)     3.408  4.710  1.264 0.315184    
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    R-sq.(adj) =  0.0274   Deviance explained = 3.02%
+    GCV = 801.59  Scale est. = 799.21    n = 25467
 
 ------------------------------------------------------------------------
 
